@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes`, `/echos` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits** et **Cartographes** (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits**, **Cartographes** et **Échos** (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -66,6 +66,17 @@ Coopératif asymétrique, tour par tour, de 3 à 6 joueurs.
 
 `CARTO_TURN_SECONDS=20 npm start` raccourcit les tours, pratique pour tester.
 
+## Échos
+
+Temps réel, de 2 à 6 joueurs, en coopération ou en versus, vue de dessus.
+
+- Chaque manche dure 30 secondes. À la suivante, tout le monde repart du départ, et ce que chacun a joué revient en **écho** : un fantôme qui refait exactement les mêmes gestes (la même direction à chaque pas), à côté de son auteur. Les pointillés montrent le parcours qu'il rejoue. Un écho rejoue des gestes, pas des positions : si une porte se ferme devant lui, il se cogne.
+- **Coopération** : 5 salles. Il faut couvrir toutes les plaques dorées au même instant, et il y en a deux par joueur, donc au moins deux manches. Une porte s'ouvre tant qu'un corps (vivant ou écho) tient la plaque de sa couleur. Au-delà de 4 manches, c'est le paradoxe : les échos s'effacent et on reprend la salle. L'hôte peut aussi effacer les échos lui-même. Trois étoiles en deux manches, deux en trois, une au-delà.
+- **Versus** : 4 manches dans l'arène. Chaque instant où seuls tes corps sont sur une plaque te rapporte des points. Les corps de joueurs différents se bousculent, échos compris.
+- Réseau : le serveur fait autorité et simule tout 20 fois par seconde, échos compris. Les clients n'envoient que leur direction quand elle change, et reçoivent les positions à chaque pas. Chaque client prédit son propre corps avec les mêmes fonctions de déplacement (`shared/games/echos.ts`) et se recale en douceur sur le serveur.
+
+`ECHOS_ROUND_TICKS=200 npm start` raccourcit les manches à 10 s ; `ECHOS_AUTOCLEAR=40` franchit chaque salle au bout de 2 s, pour tester l'enchaînement des salles.
+
 ## Sébastopol (`/station`)
 
 Hors jeu et hors salon : une station orbitale rétro-futuriste à explorer seul en vue subjective, hommage libre à l'esthétique d'*Alien: Isolation* (aucune ressource ni marque du jeu : tout est généré par le code). Three.js, page séparée (`client/station.html`).
@@ -112,6 +123,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/puzzle.ts` | Grilles, découpe des pièces, règles et messages du Puzzle |
 | `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
 | `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
+| `shared/games/echos.ts` | Salles, déplacements et collisions, plaques et portes, règles et messages d'Échos |
 | `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
@@ -120,6 +132,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `server/games/puzzle/` | Table du Puzzle (verrous, aimantation) et ses tests |
 | `server/games/puits/` | Tours de Puits (poses secrètes, résolution, scores) et ses tests |
 | `server/games/cartographes/` | Tours de Cartographes (information cachée, carte commune) et ses tests |
+| `server/games/echos/` | Simulation d'Échos (enregistrement, échos, paradoxe, versus) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
@@ -128,6 +141,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `client/src/games/puzzle/` | Page, couverture, dessins SVG, table de jeu en glisser-déposer |
 | `client/src/games/puits/` | Page, couverture, arène en canvas, aperçu des trajectoires, relecture des tours |
 | `client/src/games/cartographes/` | Page, couverture, pictogrammes, carte en SVG, carnet, journal |
+| `client/src/games/echos/` | Page, couverture, salle en canvas, prédiction, manette tactile |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |
