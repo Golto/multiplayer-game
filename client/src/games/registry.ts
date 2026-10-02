@@ -3,6 +3,7 @@
 import type { GameId } from "../../../shared/platform";
 import { rumeurs } from "./rumeurs";
 import { topologie } from "./topologie";
+import { puzzle } from "./puzzle";
 import type { GameClient } from "./types";
 
-export const GAME_CLIENTS: Record<GameId, GameClient> = { rumeurs, topologie };
+export const GAME_CLIENTS: Record<GameId, GameClient> = { rumeurs, topologie, puzzle };
