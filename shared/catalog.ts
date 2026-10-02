@@ -95,3 +95,28 @@ export const CATALOG: readonly CatalogEntry[] = [
 export function playableGame(id: GameId): PlayableGame | undefined {
   return CATALOG.find((g): g is PlayableGame => g.status === "jouable" && g.id === id);
 }
+
+export interface PageMeta {
+  title: string;
+  description: string;
+  /** Image d'aperçu (chemin servi par le client), si le jeu en a une. */
+  image: string;
+}
+
+const SITE = "La salle de jeux";
+const SITE_LINE = "Des jeux de société à jouer à plusieurs dans le navigateur, en salon privé. Pas de compte, rien à installer.";
+
+/** Titre, description et image d'une page : la salle, un jeu, ou l'invitation dans un salon. */
+export function pageMeta(game?: GameId | null, code?: string | null): PageMeta {
+  const entry = game ? playableGame(game) : undefined;
+  if (!entry) return { title: SITE, description: SITE_LINE, image: "/og/salle.png" };
+  const image = `/og/${entry.id}.png`;
+  if (code) {
+    return {
+      title: `${entry.name} · salon ${code}`,
+      description: `Une partie de ${entry.name} t'attend (${entry.players} joueurs). ${entry.pitch}`,
+      image,
+    };
+  }
+  return { title: `${entry.name} · ${SITE}`, description: `${entry.tagline}. ${entry.pitch}`, image };
+}

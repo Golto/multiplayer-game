@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import { randomInt } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import sirv from "sirv";
 import { WebSocketServer, type WebSocket } from "ws";
 import { GameError, type GameRoom } from "./platform.js";
@@ -17,6 +17,7 @@ import {
   type RoomInfo,
   type ServerMessage,
 } from "../shared/platform.js";
+import { pageMeta } from "../shared/catalog.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 /** Un salon vide est supprimé après ce délai. */
@@ -150,6 +151,42 @@ function handle(ws: WebSocket, session: Session, msg: ClientMessage): void {
 const here = dirname(fileURLToPath(import.meta.url));
 const clientDir = [join(here, "client"), join(here, "../dist/client")].find((d) => existsSync(d));
 const serveStatic = clientDir ? sirv(clientDir, { single: true, etag: true, gzip: true }) : null;
+const indexHtml = clientDir && existsSync(join(clientDir, "index.html")) ? readFileSync(join(clientDir, "index.html"), "utf8") : null;
+
+const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/**
+ * Les pages de l'application (la salle, un jeu, un salon) avec le titre, la description et l'image
+ * de ce qu'elles montrent : c'est ce que lisent Discord, WhatsApp et compagnie pour les aperçus.
+ */
+function appPage(path: string, origin: string): string | null {
+  if (!indexHtml) return null;
+  const room = path.match(/^\/r\/([A-Za-z0-9]{1,12})\/?$/);
+  const slug = path.match(/^\/([a-z]+)\/?$/)?.[1];
+  let meta;
+  if (room) {
+    const code = room[1]!.toUpperCase();
+    meta = pageMeta(rooms.get(code)?.gameId, rooms.has(code) ? code : null);
+  } else if (path === "/" || path === "") meta = pageMeta(null);
+  else if (slug && gameDefinition(slug)) meta = pageMeta(slug as GameId);
+  else return null;
+  const title = escapeHtml(meta.title);
+  const description = escapeHtml(meta.description);
+  const url = escapeHtml(origin + path);
+  const image = escapeHtml(origin + meta.image);
+  const block = [
+    `<title>${title}</title>`,
+    `<meta name="description" content="${description}" />`,
+    `<meta property="og:site_name" content="La salle de jeux" />`,
+    `<meta property="og:type" content="website" />`,
+    `<meta property="og:title" content="${title}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:url" content="${url}" />`,
+    `<meta property="og:image" content="${image}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+  ].join("\n    ");
+  return indexHtml.replace(/<!-- meta:start[\s\S]*?<!-- meta:end -->/, block);
+}
 
 const server = createServer((req, res) => {
   if (req.url === "/healthz") {
@@ -166,6 +203,16 @@ const server = createServer((req, res) => {
     res.writeHead(info ? 200 : 404, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
     res.end(JSON.stringify(info ?? { error: "Aucun salon avec ce code." }));
     return;
+  }
+  const path = (req.url ?? "/").split("?")[0]!;
+  if (req.method === "GET" || req.method === "HEAD") {
+    const proto = String(req.headers["x-forwarded-proto"] ?? "http").split(",")[0]!.trim();
+    const page = appPage(path, `${proto}://${req.headers.host ?? "localhost"}`);
+    if (page) {
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" });
+      res.end(req.method === "HEAD" ? undefined : page);
+      return;
+    }
   }
   if (serveStatic) return serveStatic(req, res);
   res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });

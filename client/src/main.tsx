@@ -1,6 +1,7 @@
 import { render } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { GameId, RoomInfo } from "../../shared/platform";
+import { pageMeta } from "../../shared/catalog";
 import { Connection, loadSession, saveSession, type PlatformSend, type Status } from "./net";
 import { navigate, roomCodeFromPath, usePath } from "./router";
 import { initTheme } from "./theme";
@@ -60,6 +61,13 @@ function App() {
   }, []);
 
   useEffect(() => conn.connect(), [conn]);
+
+  // Titre de l'onglet : le jeu en cours, ou celui de la page.
+  const slug = path.replace(/^\/|\/$/g, "");
+  const pageGame = room?.game ?? (isGameId(slug) ? slug : (loadSession()?.game ?? null));
+  useEffect(() => {
+    document.title = pageMeta(pageGame, room ? null : roomCodeFromPath(path)).title;
+  }, [pageGame, room !== null, path]);
   useConnectionSounds(status, room !== null);
 
   useEffect(() => {
