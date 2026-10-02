@@ -1,20 +1,19 @@
-// Puzzle coopératif : tout le salon assemble le même puzzle. Une pièce tenue par un joueur est
-// verrouillée pour les autres ; lâchée assez près de sa case, elle s'y aimante et n'en bouge plus.
+// Puzzle coopératif : tout le salon assemble le même puzzle. Un bloc tenu par un joueur est
+// verrouillé pour les autres. Lâché près de sa place et rattaché à un coin ou à une pièce déjà posée,
+// il s'y aimante et n'en bouge plus ; lâché à côté d'une voisine, il s'emboîte avec elle.
 
 import { randomBytes } from "node:crypto";
 import { NAME_MAX, PLAYER_ACCENTS } from "../../../shared/platform.js";
 import {
   ARTS,
-  BOARD_X,
-  BOARD_Y,
+  FORMATS,
   PIECE_COUNTS,
-  PUZZLE_H,
-  PUZZLE_W,
   RULES,
-  TABLE_H,
-  TABLE_W,
-  grid,
   home,
+  layout,
+  members,
+  resolveDrop,
+  type Layout,
   type Phase,
   type PieceCount,
   type PieceState,
@@ -40,7 +39,7 @@ export class PuzzleGame implements GameRoom {
   players: Player[] = [];
   hostId: string | null = null;
   phase: Phase = "lobby";
-  config: PuzzleConfig = { art: "sommets", count: 48 };
+  config: PuzzleConfig = { art: "sommets", count: 48, format: "paysage" };
   seed = 1;
   pieces: PieceState[] = [];
   startedAt: number | null = null;
@@ -152,6 +151,7 @@ export class PuzzleGame implements GameRoom {
     if (this.phase !== "lobby") return;
     if (config?.art && ARTS.some((a) => a.id === config.art)) this.config.art = config.art;
     if (config?.count && PIECE_COUNTS.includes(Number(config.count) as PieceCount)) this.config.count = Number(config.count) as PieceCount;
+    if (config?.format && FORMATS.some((f) => f.id === config.format)) this.config.format = config.format;
     this.host.changed();
   }
 
@@ -175,26 +175,29 @@ export class PuzzleGame implements GameRoom {
     this.host.changed();
   }
 
+  get layout(): Layout {
+    return layout(this.config);
+  }
+
   /**
    * Disperse les pièces autour du plateau : une grille d'emplacements un peu désordonnée, hors du
    * plateau, tirée au sort. Les pièces se chevauchent peu, on voit d'emblée tout le lot.
    */
   scatter(): PieceState[] {
-    const { cols, rows, cw, ch } = grid(this.config.count);
+    const L = this.layout;
+    const { cols, rows, cw, ch } = L;
     const n = cols * rows;
-    // Marge fixe et modeste : avec de grosses pièces, les bandes au-dessus et au-dessous du plateau
-    // doivent rester utilisables.
     const pad = Math.min(36, Math.min(cw, ch) * 0.3);
     const free = (x: number, y: number) =>
-      x >= pad && y >= pad && x + cw <= TABLE_W - pad && y + ch <= TABLE_H - pad && !(x + cw > BOARD_X - pad && x < BOARD_X + PUZZLE_W + pad && y + ch > BOARD_Y - pad && y < BOARD_Y + PUZZLE_H + pad);
+      x >= pad && y >= pad && x + cw <= L.tableW - pad && y + ch <= L.tableH - pad && !(x + cw > L.boardX - pad && x < L.boardX + L.w + pad && y + ch > L.boardY - pad && y < L.boardY + L.h + pad);
     // Espacement le plus large qui laisse assez de place pour toutes les pièces.
     let slots: [number, number][] = [];
-    for (let spread = 1.5; spread >= 0.7 && slots.length < n; spread -= 0.1) {
+    for (let spread = 1.5; spread >= 0.6 && slots.length < n; spread -= 0.1) {
       slots = [];
       const sx = cw * spread;
       const sy = ch * spread;
-      for (let y = pad; y + ch <= TABLE_H - pad; y += sy) {
-        for (let x = pad; x + cw <= TABLE_W - pad; x += sx) if (free(x, y)) slots.push([x, y]);
+      for (let y = pad; y + ch <= L.tableH - pad; y += sy) {
+        for (let x = pad; x + cw <= L.tableW - pad; x += sx) if (free(x, y)) slots.push([x, y]);
       }
     }
     for (let i = slots.length - 1; i > 0; i--) {
@@ -212,10 +215,10 @@ export class PuzzleGame implements GameRoom {
         const jy = slot[1] + (this.rng() - 0.5) * ch * 0.12;
         [x, y] = free(jx, jy) ? [jx, jy] : slot;
       } else {
-        x = pad + this.rng() * (TABLE_W - cw - pad * 2);
-        y = this.rng() < 0.5 ? pad : TABLE_H - ch - pad;
+        x = pad + this.rng() * (L.tableW - cw - pad * 2);
+        y = this.rng() < 0.5 ? pad : L.tableH - ch - pad;
       }
-      pieces.push({ id, x: Math.round(x), y: Math.round(y), placed: false, heldBy: 0 });
+      pieces.push({ id, x: Math.round(x), y: Math.round(y), placed: false, heldBy: 0, group: id });
     }
     return pieces;
   }
@@ -233,18 +236,31 @@ export class PuzzleGame implements GameRoom {
   grab(p: Player, id: number): void {
     const piece = this.piece(id);
     if (this.phase !== "playing" || !piece || piece.placed) return;
-    if (piece.heldBy && piece.heldBy !== p.slot) return;
-    // Une seule pièce à la fois par joueur.
-    this.releaseAll(p.slot, piece.id);
-    piece.heldBy = p.slot;
+    const block = members(this.pieces, piece.group);
+    if (block.some((q) => q.heldBy && q.heldBy !== p.slot)) return;
+    // Un seul bloc à la fois par joueur.
+    this.releaseAll(p.slot, piece.group);
+    for (const q of block) q.heldBy = p.slot;
     this.emit({ k: "grab", id: piece.id, slot: p.slot });
+  }
+
+  /** Amène la pièce `piece` en (x, y), et tout son bloc avec elle. */
+  private drag(piece: PieceState, x: number, y: number): void {
+    const L = this.layout;
+    const nx = clamp(Math.round(x), -200, L.tableW);
+    const ny = clamp(Math.round(y), -200, L.tableH);
+    const dx = nx - piece.x;
+    const dy = ny - piece.y;
+    for (const q of members(this.pieces, piece.group)) {
+      q.x += dx;
+      q.y += dy;
+    }
   }
 
   move(p: Player, id: number, x: number, y: number): void {
     const piece = this.piece(id);
     if (!piece || piece.heldBy !== p.slot || !Number.isFinite(x) || !Number.isFinite(y)) return;
-    piece.x = clamp(Math.round(x), -200, TABLE_W);
-    piece.y = clamp(Math.round(y), -200, TABLE_H);
+    this.drag(piece, x, y);
     this.emit({ k: "move", id: piece.id, x: piece.x, y: piece.y, slot: p.slot });
   }
 
@@ -252,40 +268,32 @@ export class PuzzleGame implements GameRoom {
     const piece = this.piece(id);
     if (!piece || piece.heldBy !== p.slot) {
       // Lâcher refusé : on rappelle à tous la vraie position.
-      if (piece) this.emit({ k: "drop", id: piece.id, x: piece.x, y: piece.y, placed: piece.placed, slot: 0 });
+      if (piece) this.emit({ k: "drop", slot: 0, pieces: members(this.pieces, piece.group).map((q) => ({ ...q })), placed: 0, merged: false });
       return;
     }
-    if (Number.isFinite(x) && Number.isFinite(y)) {
-      piece.x = clamp(Math.round(x), -200, TABLE_W);
-      piece.y = clamp(Math.round(y), -200, TABLE_H);
-    }
-    piece.heldBy = 0;
-    const target = home(piece.id, this.config.count);
-    const { cw, ch } = grid(this.config.count);
-    const tolerance = Math.min(cw, ch) * RULES.snap;
-    if (Math.hypot(piece.x - target.x, piece.y - target.y) <= tolerance) {
-      piece.x = target.x;
-      piece.y = target.y;
-      piece.placed = true;
-      p.placed += 1;
-    }
-    this.emit({ k: "drop", id: piece.id, x: piece.x, y: piece.y, placed: piece.placed, slot: p.slot });
-    if (piece.placed && this.pieces.every((q) => q.placed)) {
+    if (Number.isFinite(x) && Number.isFinite(y)) this.drag(piece, x, y);
+    for (const q of members(this.pieces, piece.group)) q.heldBy = 0;
+    const result = resolveDrop(this.pieces, this.layout, piece.id);
+    // Positions entières sur le fil ; le plateau, lui, est exact.
+    for (const q of result.changed) if (!q.placed) (q.x = Math.round(q.x)), (q.y = Math.round(q.y));
+    p.placed += result.placed;
+    this.emit({ k: "drop", slot: p.slot, pieces: result.changed.map((q) => ({ ...q })), placed: result.placed, merged: result.merged });
+    if (result.placed && this.pieces.every((q) => q.placed)) {
       this.phase = "done";
       this.finishedAt = Date.now();
       this.host.changed();
-    } else if (piece.placed) {
+    } else if (result.placed) {
       // Le compteur de pièces posées a changé : on rafraîchit le tableau des joueurs.
       this.host.changed();
     }
   }
 
   private releaseAll(slot: number, except = -1): void {
-    for (const q of this.pieces) {
-      if (q.heldBy === slot && q.id !== except) {
-        q.heldBy = 0;
-        this.emit({ k: "drop", id: q.id, x: q.x, y: q.y, placed: q.placed, slot });
-      }
+    const groups = new Set(this.pieces.filter((q) => q.heldBy === slot && q.group !== except).map((q) => q.group));
+    for (const g of groups) {
+      const block = members(this.pieces, g);
+      for (const q of block) q.heldBy = 0;
+      this.emit({ k: "drop", slot, pieces: block.map((q) => ({ ...q })), placed: 0, merged: false });
     }
   }
 

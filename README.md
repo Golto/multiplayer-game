@@ -34,9 +34,12 @@ Conquête de territoire en temps réel, de 2 à 8 joueurs, sur un plateau carré
 
 Puzzle coopératif de 1 à 8 joueurs : tout le salon assemble le même puzzle, et on peut y jouer seul.
 
-- L'hôte choisit le dessin parmi six illustrations SVG minimalistes (Sommets au crépuscule, Archipel, Bauhaus, Orbite, Forêt de pins, Ville la nuit) et le nombre de pièces : 12, 24, 48, 108 ou 192.
-- Les pièces sont dispersées autour du plateau et se déplacent par glisser-déposer. Lâchée assez près de sa case, une pièce s'y aimante et ne bouge plus.
-- Une pièce tenue est verrouillée pour les autres, et ses déplacements s'affichent chez tout le monde en direct. On peut rejoindre un puzzle en cours.
+- L'hôte choisit le dessin parmi six illustrations SVG minimalistes (Sommets au crépuscule, Archipel, Bauhaus, Orbite, Forêt de pins, Ville la nuit), le format (**paysage** 4:3, **panorama** 2:1, **portrait** 3:4, **carré**) et le nombre de pièces, de 12 à 432 (300 et 432 : tailles XL). La grille est choisie pour garder des cases presque carrées ; le dessin est recadré au format.
+- Les pièces sont dispersées autour du plateau et se déplacent par glisser-déposer.
+- **Pose** : une pièce ne se valide sur le plateau que si elle touche une pièce déjà posée, ou si c'est un coin. Pas de pose « à l'aveugle » : on commence par les coins, comme avec un vrai puzzle.
+- **Blocs** : hors du plateau, une pièce lâchée au bon endroit à côté d'une de ses voisines s'emboîte avec elle. Le bloc se déplace ensuite d'un seul geste, et se pose en entier s'il contient un coin ou touche le reste.
+- Un bloc tenu est verrouillé pour les autres, et ses déplacements s'affichent chez tout le monde en direct. On peut rejoindre un puzzle en cours.
+- La règle de pose (`resolveDrop` dans `shared/games/puzzle.ts`) est la même pour le serveur et le client : l'écran réagit tout de suite, le serveur confirme.
 - Outils : molette ou boutons pour zoomer, glisser le fond pour se déplacer, « Modèle » pour afficher l'image en filigrane, « Bords d'abord » pour estomper les pièces intérieures.
 - La découpe (tenons et mortaises) est tirée au sort à chaque partie à partir d'une graine partagée : seule la graine circule, le client recalcule les contours.
 
@@ -120,16 +123,16 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/catalog.ts` | Les jeux affichés dans la salle, jouables ou à venir |
 | `shared/games/rumeurs.ts` | Types, règles et actions de Rumeurs |
 | `shared/games/topologie.ts` | Surfaces et recollements, règles, messages de Topologie |
-| `shared/games/puzzle.ts` | Grilles, découpe des pièces, règles et messages du Puzzle |
+| `shared/games/puzzle.ts` | Formats et grilles, découpe des pièces, règle de pose et blocs, messages du Puzzle |
 | `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
 | `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
 | `shared/games/echos.ts` | Salles, déplacements et collisions, plaques et portes, règles et messages d'Échos |
-| `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
+| `server/index.ts` | HTTP (dont les balises d'aperçu de lien par page), API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
 | `server/games/rumeurs/` | Logique de Rumeurs et ses tests |
 | `server/games/topologie/` | Simulation de Topologie et ses tests |
-| `server/games/puzzle/` | Table du Puzzle (verrous, aimantation) et ses tests |
+| `server/games/puzzle/` | Table du Puzzle (verrous, blocs, pose) et ses tests |
 | `server/games/puits/` | Tours de Puits (poses secrètes, résolution, scores) et ses tests |
 | `server/games/cartographes/` | Tours de Cartographes (information cachée, carte commune) et ses tests |
 | `server/games/echos/` | Simulation d'Échos (enregistrement, échos, paradoxe, versus) et ses tests |

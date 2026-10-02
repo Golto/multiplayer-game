@@ -2,7 +2,7 @@
 // Assez de détails (étoiles, fenêtres, vagues, motifs) pour que chaque pièce reste reconnaissable.
 
 import type { JSX } from "preact";
-import { rng, type ArtId } from "../../../../shared/games/puzzle";
+import { ART_H, ART_W, rng, type ArtId } from "../../../../shared/games/puzzle";
 
 type Art = (p: { uid: string }) => JSX.Element;
 
@@ -239,12 +239,21 @@ export const ART_COMPONENTS: Record<ArtId, Art> = {
   ville: Ville,
 };
 
-/** Miniature d'une illustration (sélection, couverture). */
-export function ArtThumb({ art, uid, class: cls }: { art: ArtId; uid: string; class?: string }) {
+/** Une illustration recadrée au format du puzzle (w × h), sans déformation. */
+export function FramedArt({ art, uid, w, h }: { art: ArtId; uid: string; w: number; h: number }) {
   const A = ART_COMPONENTS[art];
   return (
-    <svg viewBox="0 0 1200 900" class={cls} aria-hidden="true">
+    <svg x="0" y="0" width={w} height={h} viewBox={`0 0 ${ART_W} ${ART_H}`} preserveAspectRatio="xMidYMid slice" overflow="hidden">
       <A uid={uid} />
+    </svg>
+  );
+}
+
+/** Miniature d'une illustration (sélection, couverture), éventuellement recadrée à un format. */
+export function ArtThumb({ art, uid, class: cls, w = ART_W, h = ART_H }: { art: ArtId; uid: string; class?: string; w?: number; h?: number }) {
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} class={cls} aria-hidden="true">
+      <FramedArt art={art} uid={uid} w={w} h={h} />
     </svg>
   );
 }

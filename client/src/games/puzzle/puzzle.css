@@ -69,6 +69,8 @@
 }
 .config-preview {
   position: relative;
+  align-self: center;
+  transition: width 0.3s ease-out;
 }
 .config-preview .art-thumb {
   box-shadow: var(--shadow-md);
@@ -81,7 +83,7 @@
 }
 .config-grid line {
   stroke: rgba(255, 255, 255, 0.75);
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-dasharray: 10 8;
 }
 .art-picker {
@@ -335,4 +337,26 @@ fieldset:disabled .chip:not(.is-active) {
   .puzzle-done {
     justify-content: center;
   }
+}
+
+/* Choix du format : un petit rectangle aux bonnes proportions. */
+.format-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.format-shape {
+  display: inline-block;
+  height: 14px;
+  border-radius: 2px;
+  border: 1.5px solid currentColor;
+  opacity: 0.7;
+}
+.chip.is-xl::after {
+  content: "XL";
+  margin-left: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  vertical-align: super;
+  color: var(--primary);
 }

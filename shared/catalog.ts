@@ -52,7 +52,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Puzzle",
     tagline: "À plusieurs mains, en direct",
     pitch:
-      "Choisis un dessin et un nombre de pièces, de 12 à 192, puis assemblez-le ensemble par glisser-déposer. On voit les pièces que les autres déplacent, et on peut aussi jouer seul.",
+      "Choisis un dessin, un format (paysage, panorama, portrait, carré) et de 12 à 432 pièces, puis assemblez-le ensemble par glisser-déposer. Les pièces s'emboîtent aussi hors du plateau, et on peut jouer seul.",
     players: "1 à 8",
     duration: "5 à 60 min",
     tags: ["Coopératif", "Détente", "Solo possible"],
