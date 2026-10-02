@@ -79,6 +79,17 @@ export const CATALOG: readonly CatalogEntry[] = [
     duration: "15 min",
     tags: ["Coopératif", "Asymétrique", "Communication"],
   },
+  {
+    status: "jouable",
+    id: "echos",
+    name: "Échos",
+    tagline: "Jouer avec ses anciens soi",
+    pitch:
+      "Chaque manche dure 30 secondes. À la suivante, tout ce que vous avez joué revient en fantômes à côté de vous : coopérez avec vos anciens vous pour couvrir toutes les plaques, ou laissez vos échos gêner ceux des autres.",
+    players: "2 à 6",
+    duration: "15 min",
+    tags: ["Temps réel", "Coopératif ou versus", "Boucles temporelles"],
+  },
 ];
 
 export function playableGame(id: GameId): PlayableGame | undefined {

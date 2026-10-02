@@ -7,6 +7,7 @@ import { TopoGame } from "./topologie/game.js";
 import { PuzzleGame } from "./puzzle/game.js";
 import { PuitsGame } from "./puits/game.js";
 import { CartoGame } from "./cartographes/game.js";
+import { EchoGame } from "./echos/game.js";
 
 export const GAMES: Record<GameId, GameDefinition> = {
   rumeurs: { id: "rumeurs", create: (code, host) => new Rumeurs(code, () => host.changed()) },
@@ -14,6 +15,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   puzzle: { id: "puzzle", create: (code, host) => new PuzzleGame(code, host) },
   puits: { id: "puits", create: (code, host) => new PuitsGame(code, host) },
   cartographes: { id: "cartographes", create: (code, host) => new CartoGame(code, host) },
+  echos: { id: "echos", create: (code, host) => new EchoGame(code, host) },
 };
 
 export function gameDefinition(id: unknown): GameDefinition | undefined {
