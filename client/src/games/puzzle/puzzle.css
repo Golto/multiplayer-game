@@ -1,0 +1,338 @@
+/* Puzzle : table, pièces, choix du dessin, couverture. */
+
+.art-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+/* ---------------------------------------------------------------- page du jeu */
+
+.art-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  max-width: 600px;
+}
+.art-gallery li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--foreground-muted);
+  animation: rise 0.5s ease-out backwards;
+  animation-delay: calc(var(--i) * 70ms + 100ms);
+}
+.art-gallery .art-thumb {
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s;
+}
+.art-gallery li:hover .art-thumb {
+  transform: translateY(-3px) rotate(-1deg);
+}
+
+.puzzle-cover {
+  width: 380px;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.cover-board {
+  fill: var(--background);
+  stroke: var(--border);
+  stroke-width: 6;
+}
+.cover-edge {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 3;
+}
+.cover-edge-lifted {
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 5;
+}
+.cover-lifted {
+  filter: drop-shadow(8px 14px 10px rgba(0, 0, 0, 0.35));
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+.game-box.is-playable:hover .cover-lifted {
+  transform: translate(0, 0) rotate(0deg);
+}
+
+/* ---------------------------------------------------------------- salle d'attente */
+
+.puzzle-config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.config-preview {
+  position: relative;
+}
+.config-preview .art-thumb {
+  box-shadow: var(--shadow-md);
+}
+.config-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.config-grid line {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+}
+.art-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  width: 100%;
+}
+.art-choice {
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.art-choice.is-active {
+  border-color: var(--primary);
+}
+.art-choice:disabled,
+fieldset:disabled .art-choice,
+fieldset:disabled .chip {
+  cursor: default;
+}
+fieldset:disabled .art-choice:not(.is-active),
+fieldset:disabled .chip:not(.is-active) {
+  opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------- table */
+
+.puzzle-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.puzzle-header {
+  grid-template-columns: auto 1fr auto auto;
+}
+.puzzle-clock {
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 70px;
+  text-align: center;
+}
+.puzzle-progress {
+  height: 4px;
+  background: var(--background-raised);
+}
+.puzzle-progress span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.5s ease-out;
+}
+.puzzle-main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.puzzle-table {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.puzzle-table.is-dragging {
+  cursor: grabbing;
+}
+.table-cloth {
+  fill: var(--background);
+}
+.board-frame {
+  fill: var(--background-raised);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.board {
+  fill: var(--background-overlay);
+}
+.board-grid {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
+}
+
+.piece {
+  cursor: grab;
+}
+.piece-edge {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.4);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+.piece:hover .piece-edge {
+  stroke: var(--primary);
+  stroke-width: 2.5;
+}
+.piece.is-placed {
+  cursor: default;
+}
+.piece.is-placed .piece-edge,
+.piece.is-placed:hover .piece-edge {
+  stroke: rgba(0, 0, 0, 0.07);
+  stroke-width: 1;
+}
+.piece.is-mine .piece-edge {
+  stroke: var(--primary);
+  stroke-width: 3;
+}
+.piece.is-held {
+  cursor: not-allowed;
+}
+.piece.is-held .piece-edge {
+  stroke: var(--c);
+  stroke-width: 4;
+}
+.piece.is-dim {
+  opacity: 0.18;
+}
+.piece-holder {
+  fill: var(--c);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 26px;
+  paint-order: stroke;
+  stroke: var(--background);
+  stroke-width: 6px;
+  pointer-events: none;
+}
+
+.puzzle-tools {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background-overlay);
+  box-shadow: var(--shadow-lg);
+}
+.puzzle-tools .btn.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.tools-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+.puzzle-players {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+.puzzle-players .player-chip {
+  padding-right: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------------------------------------------------------------- fin */
+
+/* Le dessin terminé reste visible : la carte se pose en bas, sans voile. */
+.puzzle-done {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--space-4);
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--space-4);
+  pointer-events: none;
+  animation: rise 0.6s ease-out 0.6s backwards;
+}
+.puzzle-done-card {
+  pointer-events: auto;
+}
+.puzzle-page:has(.puzzle-done) .puzzle-tools {
+  display: none;
+}
+.overlay-card.puzzle-done-card {
+  width: min(440px, 100%);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.done-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.done-list li {
+  display: grid;
+  grid-template-columns: auto 90px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: var(--space-3);
+}
+.done-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.done-bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--background);
+  overflow: hidden;
+}
+.done-bar span {
+  display: block;
+  height: 100%;
+  background: var(--c);
+  animation: grow 1s ease-out 0.8s backwards;
+  transform-origin: left;
+}
+
+@media (max-width: 720px) {
+  .puzzle-header {
+    grid-template-columns: auto 1fr auto;
+  }
+  .puzzle-tools {
+    left: var(--space-3);
+    right: var(--space-3);
+    transform: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .puzzle-players {
+    display: none;
+  }
+  .art-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .puzzle-done {
+    justify-content: center;
+  }
+}

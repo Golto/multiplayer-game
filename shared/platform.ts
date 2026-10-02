@@ -1,6 +1,6 @@
 // Plateforme : salons privés, codes et messages communs à tous les jeux.
 
-export type GameId = "rumeurs" | "topologie";
+export type GameId = "rumeurs" | "topologie" | "puzzle";
 
 export const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const CODE_LENGTH = 5;

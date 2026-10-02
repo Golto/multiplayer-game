@@ -47,6 +47,17 @@ export const CATALOG: readonly CatalogEntry[] = [
     tags: ["Temps réel", "Territoire", "Mathématiques"],
   },
   {
+    status: "jouable",
+    id: "puzzle",
+    name: "Puzzle",
+    tagline: "À plusieurs mains, en direct",
+    pitch:
+      "Choisis un dessin et un nombre de pièces, de 12 à 192, puis assemblez-le ensemble par glisser-déposer. On voit les pièces que les autres déplacent, et on peut aussi jouer seul.",
+    players: "1 à 8",
+    duration: "5 à 60 min",
+    tags: ["Coopératif", "Détente", "Solo possible"],
+  },
+  {
     status: "bientot",
     name: "Cartographes",
     tagline: "Reconstituer la carte à l'aveugle",

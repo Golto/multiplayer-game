@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs** et **Topologie**. Cartographes et Puits apparaissent comme « Bientôt » (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie** et **Puzzle**. Cartographes et Puits apparaissent comme « Bientôt » (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -29,6 +29,16 @@ Conquête de territoire en temps réel, de 2 à 8 joueurs, sur un plateau carré
 - 3 manches de 2 minutes, chacune sur une surface tirée au sort parmi le **tore**, le **ruban de Möbius** (murs en haut et en bas), la **bouteille de Klein** et le **plan projectif**. Les flèches sur les bords suivent la notation des topologues : même sens, recollement droit ; sens contraires, recollement en miroir. Les marges autour du plateau montrent ce qu'il y a de l'autre côté de chaque bord.
 - Commandes : flèches, ZQSD ou WASD ; glissés du doigt ou croix directionnelle sur téléphone.
 - Le serveur avance la partie 8 fois par seconde et n'envoie que les cases qui ont changé (`TickMessage`) ; l'état complet ne part qu'aux changements de phase et aux reconnexions.
+
+## Puzzle
+
+Puzzle coopératif de 1 à 8 joueurs : tout le salon assemble le même puzzle, et on peut y jouer seul.
+
+- L'hôte choisit le dessin parmi six illustrations SVG minimalistes (Sommets au crépuscule, Archipel, Bauhaus, Orbite, Forêt de pins, Ville la nuit) et le nombre de pièces : 12, 24, 48, 108 ou 192.
+- Les pièces sont dispersées autour du plateau et se déplacent par glisser-déposer. Lâchée assez près de sa case, une pièce s'y aimante et ne bouge plus.
+- Une pièce tenue est verrouillée pour les autres, et ses déplacements s'affichent chez tout le monde en direct. On peut rejoindre un puzzle en cours.
+- Outils : molette ou boutons pour zoomer, glisser le fond pour se déplacer, « Modèle » pour afficher l'image en filigrane, « Bords d'abord » pour estomper les pièces intérieures.
+- La découpe (tenons et mortaises) est tirée au sort à chaque partie à partir d'une graine partagée : seule la graine circule, le client recalcule les contours.
 
 ## Sébastopol (`/station`)
 
@@ -73,16 +83,19 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/catalog.ts` | Les jeux affichés dans la salle, jouables ou à venir |
 | `shared/games/rumeurs.ts` | Types, règles et actions de Rumeurs |
 | `shared/games/topologie.ts` | Surfaces et recollements, règles, messages de Topologie |
+| `shared/games/puzzle.ts` | Grilles, découpe des pièces, règles et messages du Puzzle |
 | `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
 | `server/games/rumeurs/` | Logique de Rumeurs et ses tests |
 | `server/games/topologie/` | Simulation de Topologie et ses tests |
+| `server/games/puzzle/` | Table du Puzzle (verrous, aimantation) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
 | `client/src/games/rumeurs/` | Page, couverture, écrans, cartes et sons de Rumeurs |
 | `client/src/games/topologie/` | Page, couverture, arène en canvas, schémas de surfaces |
+| `client/src/games/puzzle/` | Page, couverture, dessins SVG, table de jeu en glisser-déposer |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |
