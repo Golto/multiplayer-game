@@ -58,18 +58,22 @@ export const CATALOG: readonly CatalogEntry[] = [
     tags: ["Coopératif", "Détente", "Solo possible"],
   },
   {
+    status: "jouable",
+    id: "puits",
+    name: "Puits",
+    tagline: "Gravité partagée, trajectoires croisées",
+    pitch:
+      "Tu ne pilotes pas ton vaisseau : tu poses des puits de gravité. Tout le monde planifie en même temps, puis la physique se joue, et les puits de chacun dévient tous les vaisseaux.",
+    players: "2 à 6",
+    duration: "10 min",
+    tags: ["Tours simultanés", "Physique", "Versus"],
+  },
+  {
     status: "bientot",
     name: "Cartographes",
     tagline: "Reconstituer la carte à l'aveugle",
     players: "3 à 6",
     tags: ["Coopératif", "Communication"],
-  },
-  {
-    status: "bientot",
-    name: "Puits",
-    tagline: "Gravité partagée, trajectoires croisées",
-    players: "2 à 6",
-    tags: ["Tactique", "Physique"],
   },
 ];
 

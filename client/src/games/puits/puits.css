@@ -1,0 +1,411 @@
+/* Puits : arène, commandes, couverture. */
+
+/* ---------------------------------------------------------------- couverture et page du jeu */
+
+.puits-cover {
+  width: 360px;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.puits-cover .cover-space {
+  fill: var(--background-overlay);
+  stroke: var(--foreground-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+.puits-cover .cover-grid path {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.2;
+}
+.puits-cover .cover-orbit {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+}
+.puits-cover .sun-a {
+  stop-color: var(--primary);
+}
+.puits-cover .sun-b {
+  stop-color: var(--secondary);
+}
+.puits-cover .cover-sun {
+  filter: drop-shadow(0 0 10px hsl(from var(--primary) h s l / 0.6));
+}
+.cover-well-ring {
+  fill: none;
+  stroke: var(--accent-amethyst);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.cover-well-ring.r3 {
+  opacity: 0.35;
+}
+.cover-well-ring.r2 {
+  opacity: 0.65;
+}
+.cover-well-core {
+  fill: var(--accent-amethyst);
+}
+.cover-path {
+  fill: none;
+  stroke: var(--accent-green);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 5;
+  stroke-linecap: round;
+}
+.cover-path-b {
+  stroke: var(--accent-pink);
+}
+.cover-ship path {
+  stroke: var(--foreground);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.cover-ship-a path {
+  fill: var(--accent-green);
+}
+.cover-ship-b path {
+  fill: var(--accent-pink);
+}
+.cover-shard {
+  fill: var(--accent-yellow);
+  stroke: var(--foreground);
+  stroke-width: 1.2;
+}
+.game-box.is-playable:hover .cover-well-ring,
+.puits-hero-art .cover-well-ring {
+  animation: well-pull 1.6s ease-in infinite;
+}
+.game-box.is-playable:hover .cover-well-ring.r2,
+.puits-hero-art .cover-well-ring.r2 {
+  animation-delay: -0.8s;
+}
+@keyframes well-pull {
+  from {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+.game-box.is-playable:hover .cover-path,
+.puits-hero-art .cover-path {
+  animation: march 1.2s linear infinite;
+}
+@keyframes march {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+.puits-hero-art {
+  margin-top: var(--space-6);
+  max-width: 460px;
+}
+.puits-hero-art .puits-cover {
+  width: 100%;
+}
+
+.kind-glyph {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.25em;
+  flex: none;
+}
+.kind-glyph .ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.kind-glyph.puits .ring:first-child {
+  opacity: 0.4;
+}
+.kind-glyph .core {
+  fill: currentColor;
+}
+
+/* ---------------------------------------------------------------- arène */
+
+.puits-header {
+  grid-template-columns: auto 1fr auto auto;
+}
+.phase-pill {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--secondary) 16%, transparent);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.phase-pill.resolve {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.puits-clock {
+  min-width: 64px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.puits-clock.is-urgent {
+  color: var(--danger-strong);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.puits-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  align-items: start;
+}
+.puits-stage {
+  min-width: 0;
+}
+.puits-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: min(calc(100vh - 120px), 920px);
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+}
+.puits-canvas {
+  display: block;
+  border-radius: 50%;
+  touch-action: none;
+}
+.puits-canvas.is-aiming {
+  cursor: crosshair;
+}
+
+.puits-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+}
+.puits-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--background-overlay);
+  animation: rise 0.35s ease-out;
+}
+.puits-controls .eyebrow {
+  margin-bottom: -6px;
+}
+.kind-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.kind {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  padding: var(--space-2-5) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  color: var(--foreground);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.2s;
+}
+.kind > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 18px;
+}
+.kind .kind-glyph {
+  width: 28px;
+  height: 28px;
+  color: var(--foreground-muted);
+}
+.kind:hover {
+  transform: translateY(-1px);
+}
+.kind.is-on {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--background-raised));
+}
+.kind.is-on .kind-glyph {
+  color: var(--primary);
+}
+.controls-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.controls-actions .btn-primary {
+  flex: 1;
+}
+.puits-ghost-note {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border);
+}
+
+.puits-score h2 {
+  margin-bottom: var(--space-3);
+}
+.puits-score-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-5);
+}
+.puits-score-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  transition: opacity 0.4s;
+}
+.puits-score-row.is-away {
+  opacity: 0.5;
+}
+.puits-score-row.is-lost .seal {
+  filter: grayscale(0.8);
+  opacity: 0.6;
+}
+.puits-score-row .score-body {
+  flex: 1;
+  min-width: 0;
+}
+.puits-score-row .score-top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+.puits-score-row .score-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.puits-score-row.is-you .score-name::after {
+  content: " (toi)";
+  font-weight: 400;
+  color: var(--foreground-muted);
+}
+.lost-tag {
+  margin-right: var(--space-1-5, 6px);
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger-strong);
+  font-weight: 600;
+}
+.puits-points {
+  font-weight: 700;
+}
+.lock-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+  color: var(--foreground-muted);
+  font-size: 12px;
+}
+.lock-dot.is-locked {
+  border: 0;
+  background: var(--c);
+  color: var(--background-raised);
+  animation: pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+.puits-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Résultats de manche. */
+.overlay-card.puits-results {
+  width: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.puits-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.puits-results-list li {
+  display: grid;
+  grid-template-columns: 24px auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--background-overlay);
+  animation: rise 0.4s ease-out backwards;
+  animation-delay: calc(var(--i) * 90ms);
+}
+.puits-results-list li.is-you {
+  outline: 2px solid var(--c);
+}
+.results-points {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--c);
+}
+.puits-bar .bar-cash {
+  background: var(--c);
+}
+
+/* ---------------------------------------------------------------- adaptatif */
+
+@media (max-width: 1100px) {
+  .puits-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .puits-side {
+    position: static;
+  }
+  .puits-canvas-wrap {
+    height: min(100vw - 48px, 760px);
+  }
+}
+@media (max-width: 720px) {
+  .puits-grid {
+    padding: var(--space-3) var(--space-4) var(--space-6);
+  }
+  .puits-header {
+    grid-template-columns: auto 1fr auto;
+    padding: var(--space-2) var(--space-4);
+  }
+  .puits-header .round-info {
+    display: none;
+  }
+  .puits-canvas-wrap {
+    height: calc(100vw - 32px);
+  }
+  .puits-results-list li {
+    grid-template-columns: 24px auto minmax(0, 1fr) auto;
+  }
+  .puits-results-list li .muted {
+    display: none;
+  }
+}
