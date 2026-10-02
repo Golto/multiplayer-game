@@ -7,7 +7,8 @@ import { play, unlockAudio, type SoundId } from "./engine";
 
 /**
  * Sons d'interface, par délégation : chaque bouton joue son `data-sound`, sinon un son par défaut
- * selon son style. `data-sound="none"` le rend muet. La frappe au clavier joue `input.key`.
+ * selon son style. `data-sound="none"` le rend muet. La frappe au clavier joue `input.key`, et le
+ * survol d'une carte un bruit de carton.
  */
 export function installUiSounds(): void {
   const unlock = () => unlockAudio();
@@ -24,13 +25,14 @@ export function installUiSounds(): void {
     play("button.tap");
   });
 
+  // Un petit bruit de carton quand la souris passe sur une carte.
   document.addEventListener("pointerover", (event) => {
     if ((event as PointerEvent).pointerType !== "mouse") return;
-    const button = (event.target as Element | null)?.closest?.(".btn-primary") as HTMLButtonElement | null;
-    if (!button || button.disabled) return;
+    const card = (event.target as Element | null)?.closest?.(".card");
+    if (!card) return;
     const from = (event as PointerEvent).relatedTarget as Node | null;
-    if (from && button.contains(from)) return;
-    play("button.hover");
+    if (from && card.contains(from)) return;
+    play("card.hover");
   });
 
   document.addEventListener("input", (event) => {

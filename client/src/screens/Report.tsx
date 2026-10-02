@@ -20,7 +20,7 @@ export function ReportOverlay({ view, send, playerOf, onClose }: Props) {
     setFlipped(false);
     const id = setTimeout(() => {
       setFlipped(true);
-      play("carousel.next");
+      play("card.flip");
     }, 1400);
     return () => clearTimeout(id);
   }, [report?.round]);

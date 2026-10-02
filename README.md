@@ -49,10 +49,17 @@ Avec l'offre gratuite, le service s'endort après 15 minutes sans visite et le p
 
 ## Sound design
 
-Les sons sont synthétisés en direct avec Web Audio à partir de la palette `client/src/sound/palette-goutte.json` (accordage Fa4 +43 ¢, gamme majeure, matière « Goutte »), sans fichier audio. `client/src/sound/engine.ts` joue un jeton (`play("feedback.success")`) et `client/src/sound/wiring.ts` les relie à l'interface :
+Les sons sont synthétisés en direct avec Web Audio, sans fichier audio. `client/src/sound/engine.ts` est un portage du moteur de [soundboard-design](https://github.com/Golto/soundboard-design) (voies chirp et bruit, passe-bas relatif à la note, compresseur et limiteur de bus) :
+
+- `palette-goutte.json` : l'export de la palette (Fa4 +43 ¢, gamme majeure, matière « Goutte ») ;
+- `note-extras.json` : frappe, brillance et attaque de chaque note, reprises du catalogue car absentes de l'export ;
+- `GAME_TUNING` adoucit la palette pour le jeu : une quarte plus bas, moins de grain et de brillance, niveau réduit ;
+- deux jetons propres au jeu jouent sur une matière « carton » (le papier de soundboard-design, assombri) : `card.hover` au survol d'une carte et `card.flip` quand une carte se retourne.
+
+`play("feedback.success")` joue un jeton et `client/src/sound/wiring.ts` les relie à l'interface :
 
 - chaque bouton joue son attribut `data-sound` (par défaut `button.primary` ou `button.tap`, `none` pour le rendre muet) ;
-- la saisie joue `input.key` / `input.delete` ;
+- la saisie joue `input.key` / `input.delete`, le survol d'une carte `card.hover` ;
 - les événements de partie : arrivée d'un joueur, lancement, ouverture et clôture du marché, révélation, tampons Confirmé/Démenti, compte à rebours, dévoilement final, perte de connexion.
 
 La cloche dans l'en-tête coupe les sons (préférence gardée dans le navigateur).

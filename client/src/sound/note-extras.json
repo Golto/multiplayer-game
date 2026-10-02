@@ -1,0 +1,596 @@
+{
+ "button.tap": [
+  {
+   "transient": 1.0,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "button.primary": [
+  {
+   "transient": 0.9,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.2,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "button.secondary": [
+  {
+   "transient": 0.6,
+   "brightness": 0.7,
+   "attackSeconds": 0.003
+  }
+ ],
+ "button.hover": [
+  {
+   "transient": 0.25,
+   "brightness": 1.35,
+   "attackSeconds": 0.003
+  }
+ ],
+ "button.blocked": [
+  {
+   "transient": 0.55,
+   "brightness": 0.35,
+   "attackSeconds": 0.003
+  }
+ ],
+ "press.hold": [
+  {
+   "transient": 0.2,
+   "brightness": 0.55,
+   "attackSeconds": 0.003
+  }
+ ],
+ "press.commit": [
+  {
+   "transient": 0.7,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "press.abort": [
+  {
+   "transient": 0.3,
+   "brightness": 0.45,
+   "attackSeconds": 0.003
+  }
+ ],
+ "slider.grab": [
+  {
+   "transient": 0.85,
+   "brightness": 0.9,
+   "attackSeconds": 0.003
+  }
+ ],
+ "slider.tick": [
+  {
+   "transient": 1.3,
+   "brightness": 1.5,
+   "attackSeconds": 0.003
+  }
+ ],
+ "slider.detent": [
+  {
+   "transient": 0.95,
+   "brightness": 1.15,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.0,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "slider.limit": [
+  {
+   "transient": 0.85,
+   "brightness": 0.3,
+   "attackSeconds": 0.003
+  }
+ ],
+ "slider.release": [
+  {
+   "transient": 0.45,
+   "brightness": 1.05,
+   "attackSeconds": 0.003
+  }
+ ],
+ "stepper.increment": [
+  {
+   "transient": 0.9,
+   "brightness": 1.2,
+   "attackSeconds": 0.003
+  }
+ ],
+ "stepper.decrement": [
+  {
+   "transient": 0.9,
+   "brightness": 1.05,
+   "attackSeconds": 0.003
+  }
+ ],
+ "carousel.next": [
+  {
+   "transient": 0.5,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "carousel.previous": [
+  {
+   "transient": 0.5,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "carousel.wrap": [
+  {
+   "transient": 0.3,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "carousel.end": [
+  {
+   "transient": 0.7,
+   "brightness": 0.35,
+   "attackSeconds": 0.003
+  }
+ ],
+ "nav.forward": [
+  {
+   "transient": 0.35,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "nav.back": [
+  {
+   "transient": 0.35,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 0.75,
+   "attackSeconds": 0.003
+  }
+ ],
+ "nav.tab": [
+  {
+   "transient": 0.55,
+   "brightness": 1.15,
+   "attackSeconds": 0.003
+  }
+ ],
+ "disclosure.expand": [
+  {
+   "transient": 0.22,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.08,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "disclosure.collapse": [
+  {
+   "transient": 0.18,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.08,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.08,
+   "brightness": 0.7,
+   "attackSeconds": 0.003
+  }
+ ],
+ "drawer.open": [
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.02
+  },
+  {
+   "transient": 0.06,
+   "brightness": 1.0,
+   "attackSeconds": 0.02
+  },
+  {
+   "transient": 0.05,
+   "brightness": 1.0,
+   "attackSeconds": 0.025
+  }
+ ],
+ "drawer.close": [
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.06,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.06,
+   "brightness": 0.7,
+   "attackSeconds": 0.003
+  }
+ ],
+ "modal.open": [
+  {
+   "transient": 0.04,
+   "brightness": 1.35,
+   "attackSeconds": 0.055
+  },
+  {
+   "transient": 0.03,
+   "brightness": 1.35,
+   "attackSeconds": 0.07
+  }
+ ],
+ "modal.close": [
+  {
+   "transient": 0.08,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.05,
+   "brightness": 0.65,
+   "attackSeconds": 0.003
+  }
+ ],
+ "tooltip.show": [
+  {
+   "transient": 0.05,
+   "brightness": 1.4,
+   "attackSeconds": 0.03
+  }
+ ],
+ "toggle.on": [
+  {
+   "transient": 0.7,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.25,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "toggle.off": [
+  {
+   "transient": 0.7,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.25,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "checkbox.check": [
+  {
+   "transient": 0.95,
+   "brightness": 1.15,
+   "attackSeconds": 0.003
+  }
+ ],
+ "checkbox.uncheck": [
+  {
+   "transient": 0.95,
+   "brightness": 0.95,
+   "attackSeconds": 0.003
+  }
+ ],
+ "chip.select": [
+  {
+   "transient": 0.7,
+   "brightness": 1.2,
+   "attackSeconds": 0.003
+  }
+ ],
+ "chip.deselect": [
+  {
+   "transient": 0.7,
+   "brightness": 0.9,
+   "attackSeconds": 0.003
+  }
+ ],
+ "input.key": [
+  {
+   "transient": 1.2,
+   "brightness": 1.4,
+   "attackSeconds": 0.003
+  }
+ ],
+ "input.delete": [
+  {
+   "transient": 1.1,
+   "brightness": 0.8,
+   "attackSeconds": 0.003
+  }
+ ],
+ "input.clear": [
+  {
+   "transient": 0.8,
+   "brightness": 0.7,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.3,
+   "brightness": 0.5,
+   "attackSeconds": 0.003
+  }
+ ],
+ "input.suggestion": [
+  {
+   "transient": 0.1,
+   "brightness": 1.5,
+   "attackSeconds": 0.02
+  },
+  {
+   "transient": 0.08,
+   "brightness": 1.5,
+   "attackSeconds": 0.028
+  }
+ ],
+ "input.submit": [
+  {
+   "transient": 0.55,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.success": [
+  {
+   "transient": 0.45,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.error": [
+  {
+   "transient": 0.6,
+   "brightness": 0.6,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.2,
+   "brightness": 0.42,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.warning": [
+  {
+   "transient": 0.5,
+   "brightness": 0.95,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.4,
+   "brightness": 0.95,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.notification": [
+  {
+   "transient": 0.3,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.complete": [
+  {
+   "transient": 0.3,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "feedback.undo": [
+  {
+   "transient": 0.4,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 0.8,
+   "attackSeconds": 0.003
+  }
+ ],
+ "drag.lift": [
+  {
+   "transient": 0.6,
+   "brightness": 0.7,
+   "attackSeconds": 0.003
+  }
+ ],
+ "drag.over": [
+  {
+   "transient": 0.55,
+   "brightness": 1.3,
+   "attackSeconds": 0.003
+  }
+ ],
+ "drag.drop": [
+  {
+   "transient": 0.95,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "drag.reject": [
+  {
+   "transient": 0.75,
+   "brightness": 0.32,
+   "attackSeconds": 0.003
+  }
+ ],
+ "refresh.pull": [
+  {
+   "transient": 0.15,
+   "brightness": 0.6,
+   "attackSeconds": 0.003
+  }
+ ],
+ "refresh.release": [
+  {
+   "transient": 0.5,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.12,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "system.start": [
+  {
+   "transient": 0.15,
+   "brightness": 1.0,
+   "attackSeconds": 0.03
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.03
+  },
+  {
+   "transient": 0.08,
+   "brightness": 1.0,
+   "attackSeconds": 0.04
+  }
+ ],
+ "system.ready": [
+  {
+   "transient": 0.2,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.1,
+   "brightness": 1.0,
+   "attackSeconds": 0.003
+  }
+ ],
+ "system.lock": [
+  {
+   "transient": 0.9,
+   "brightness": 0.6,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.5,
+   "brightness": 0.35,
+   "attackSeconds": 0.003
+  }
+ ],
+ "system.unlock": [
+  {
+   "transient": 0.7,
+   "brightness": 0.5,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.3,
+   "brightness": 0.9,
+   "attackSeconds": 0.003
+  }
+ ],
+ "system.offline": [
+  {
+   "transient": 0.4,
+   "brightness": 0.5,
+   "attackSeconds": 0.003
+  },
+  {
+   "transient": 0.15,
+   "brightness": 0.3,
+   "attackSeconds": 0.003
+  }
+ ]
+}

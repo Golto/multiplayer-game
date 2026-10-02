@@ -21,7 +21,7 @@ export function FinalScreen({ view, send, onLeave }: { view: GameView; send: Sen
   useEffect(() => {
     const ids = [setTimeout(() => setShown(true), 400)];
     // Une cascade de retournements, une marchandise après l'autre.
-    for (let row = 0; row < 4; row++) ids.push(setTimeout(() => play("carousel.next", { pitch: row * 2 }), 700 + row * 450));
+    for (let row = 0; row < 4; row++) ids.push(setTimeout(() => play("card.flip", { pitch: row * 2 }), 700 + row * 450));
     return () => ids.forEach(clearTimeout);
   }, []);
 
