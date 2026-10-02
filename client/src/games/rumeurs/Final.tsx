@@ -1,10 +1,10 @@
 import { useEffect, useState } from "preact/hooks";
-import { RULES, describeRumor, formatSigned, type GameView } from "../../../shared/protocol";
-import { Card, CommodityGlyph, PlayerSeal, Watermark, accentVar, commodityInfo } from "../art";
-import { Icon } from "../icons";
-import { play } from "../sound/engine";
-import type { Send } from "../main";
-import { Brand, SoundToggle, ThemeToggle } from "./common";
+import { RULES, describeRumor, formatSigned, type GameView } from "../../../../shared/games/rumeurs";
+import { Card, CommodityGlyph, PlayerSeal, Watermark, accentVar, commodityInfo } from "./art";
+import { Icon } from "../../ui/icons";
+import { play } from "../../sound/engine";
+import type { Send } from "./types";
+import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { Dispatch, serialOf, usePlayers } from "./Game";
 
 const AWARD_GLYPH: Record<string, string> = {
@@ -36,7 +36,7 @@ export function FinalScreen({ view, send, onLeave }: { view: GameView; send: Sen
     <div class="page final">
       <Watermark />
       <header class="topbar">
-        <Brand />
+        <Brand name="Rumeurs" />
         <div class="topbar-actions">
           <SoundToggle />
           <ThemeToggle />

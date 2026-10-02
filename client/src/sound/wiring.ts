@@ -1,7 +1,6 @@
-// Branche la palette sonore sur l'interface et sur les événements de la partie.
+// Branche la palette sonore sur l'interface commune à tous les jeux.
 
 import { useEffect, useRef } from "preact/hooks";
-import type { GameView } from "../../../shared/protocol";
 import type { Status } from "../net";
 import { play, unlockAudio, type SoundId } from "./engine";
 
@@ -16,7 +15,7 @@ export function installUiSounds(): void {
   window.addEventListener("keydown", unlock, { capture: true });
 
   document.addEventListener("click", (event) => {
-    const button = (event.target as Element | null)?.closest?.("button");
+    const button = (event.target as Element | null)?.closest?.("button, a[data-sound]") as HTMLButtonElement | null;
     if (!button || button.disabled) return;
     const explicit = button.getAttribute("data-sound");
     if (explicit === "none") return;
@@ -43,57 +42,14 @@ export function installUiSounds(): void {
   });
 }
 
-/** Sons liés à l'état de la partie, déduits en comparant l'état reçu au précédent. */
-export function useGameSounds(view: GameView | null, status: Status): void {
-  const prev = useRef<GameView | null>(null);
-  const prevStatus = useRef<Status>(status);
-
+/** Perte et retour de la connexion au serveur, pendant qu'on est dans un salon. */
+export function useConnectionSounds(status: Status, inRoom: boolean): void {
+  const prev = useRef<Status>(status);
   useEffect(() => {
-    const before = prevStatus.current;
-    prevStatus.current = status;
-    if (!prev.current) return;
+    const before = prev.current;
+    prev.current = status;
+    if (!inRoom) return;
     if (before === "open" && status === "closed") play("system.offline");
     if (before !== "open" && status === "open") play("system.ready");
   }, [status]);
-
-  useEffect(() => {
-    const old = prev.current;
-    prev.current = view;
-    if (!view) return;
-    if (!old) return play("nav.forward");
-    if (old.code !== view.code) return;
-
-    if (old.phase !== view.phase) {
-      switch (view.phase) {
-        case "rumor":
-          return play(old.phase === "lobby" ? "system.start" : "disclosure.expand");
-        case "market":
-          play("system.unlock");
-          if (view.rumors.some((r) => r.input.kind !== "silence")) later(380, "input.suggestion");
-          return;
-        case "report":
-          play("system.lock");
-          return later(260, "modal.open");
-        case "final":
-          play("feedback.complete");
-          return later(1900, "system.ready");
-        case "lobby":
-          return play("nav.back");
-      }
-    }
-
-    if (view.phase === "lobby") {
-      if (view.players.length > old.players.length) play("feedback.notification");
-      else if (view.players.length < old.players.length) play("chip.deselect");
-      return;
-    }
-
-    // Un autre joueur vient de valider sa phase.
-    const othersDone = (v: GameView) => v.players.filter((p) => p.id !== v.you && p.done).length;
-    if (othersDone(view) > othersDone(old)) play("checkbox.check");
-  }, [view]);
-}
-
-function later(ms: number, id: SoundId): void {
-  setTimeout(() => play(id), ms);
 }

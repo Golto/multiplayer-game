@@ -1,46 +1,45 @@
 import { render } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import type { ClientMessage, GameView } from "../../shared/protocol";
-import { Connection, loadSession, saveSession, type Status } from "./net";
+import type { GameId, RoomInfo } from "../../shared/platform";
+import { Connection, loadSession, saveSession, type PlatformSend, type Status } from "./net";
+import { navigate, roomCodeFromPath, usePath } from "./router";
 import { initTheme } from "./theme";
 import { play } from "./sound/engine";
-import { installUiSounds, useGameSounds } from "./sound/wiring";
-import { Home } from "./screens/Home";
-import { Lobby } from "./screens/Lobby";
-import { GameScreen } from "./screens/Game";
-import { FinalScreen } from "./screens/Final";
+import { installUiSounds, useConnectionSounds } from "./sound/wiring";
+import { GAME_CLIENTS } from "./games/registry";
+import { Hub } from "./hub/Hub";
 import "./tokens.css";
 import "./styles.css";
+import "./hub/hub.css";
 
 initTheme();
 installUiSounds();
 
-export type Send = (msg: ClientMessage) => void;
+interface Room {
+  game: GameId;
+  state: unknown;
+}
 
-function codeFromUrl(): string | null {
-  const match = location.pathname.match(/^\/r\/([A-Za-z0-9]{4,8})\/?$/);
-  return match ? match[1]!.toUpperCase() : null;
+function isGameId(id: string): id is GameId {
+  return Object.hasOwn(GAME_CLIENTS, id);
 }
 
 function App() {
-  const [view, setView] = useState<GameView | null>(null);
+  const path = usePath();
+  const [room, setRoom] = useState<Room | null>(null);
   const [status, setStatus] = useState<Status>("connecting");
   const [toast, setToast] = useState<string | null>(null);
-  const [clockOffset, setClockOffset] = useState(0);
   const joined = useRef(false);
 
   const conn = useMemo(() => {
-    const urlCode = codeFromUrl();
+    const urlCode = roomCodeFromPath(location.pathname);
     const session = loadSession();
     if (session && urlCode && session.code !== urlCode) saveSession(null);
     return new Connection({
-      onState: (state, offset) => {
-        setView(state);
-        setClockOffset(offset);
-      },
+      onState: (game, state) => setRoom({ game, state }),
       onJoined: (session) => {
         joined.current = true;
-        if (location.pathname !== `/r/${session.code}`) history.replaceState(null, "", `/r/${session.code}`);
+        navigate(`/r/${session.code}`, { replace: true });
       },
       onError: (message, fatal) => {
         if (!joined.current && loadSession()) {
@@ -49,7 +48,7 @@ function App() {
         }
         if (fatal) {
           saveSession(null);
-          setView(null);
+          setRoom(null);
         }
         setToast(message);
         play("feedback.warning");
@@ -59,7 +58,7 @@ function App() {
   }, []);
 
   useEffect(() => conn.connect(), [conn]);
-  useGameSounds(view, status);
+  useConnectionSounds(status, room !== null);
 
   useEffect(() => {
     if (!toast) return;
@@ -67,26 +66,29 @@ function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
-  const send: Send = (msg) => conn.send(msg);
+  const send: PlatformSend = (msg) => conn.send(msg);
 
   const leave = () => {
+    const game = room?.game;
     send({ t: "leave" });
     saveSession(null);
     joined.current = false;
-    setView(null);
-    history.replaceState(null, "", "/");
+    setRoom(null);
+    navigate(game ? `/${game}` : "/", { replace: true });
   };
 
   let screen;
-  if (!view) screen = <Home send={send} initialCode={codeFromUrl()} connecting={status !== "open"} />;
-  else if (view.phase === "lobby") screen = <Lobby view={view} send={send} onLeave={leave} />;
-  else if (view.phase === "final") screen = <FinalScreen view={view} send={send} onLeave={leave} />;
-  else screen = <GameScreen view={view} send={send} clockOffset={clockOffset} onLeave={leave} />;
+  if (room) {
+    const { Room: RoomScreen } = GAME_CLIENTS[room.game];
+    screen = <RoomScreen state={room.state} sendAction={(action) => send({ t: "action", action })} onLeave={leave} />;
+  } else {
+    screen = <Route path={path} send={send} connecting={status !== "open"} onMissingRoom={setToast} />;
+  }
 
   return (
     <>
       {screen}
-      {status !== "open" && view && (
+      {status !== "open" && room && (
         <div class="connection-banner" role="status">
           Connexion perdue, on se reconnecte…
         </div>
@@ -98,6 +100,48 @@ function App() {
       )}
     </>
   );
+}
+
+/** Pages hors salon : la salle de jeux, la page d'un jeu, ou un lien d'invitation. */
+function Route({ path, send, connecting, onMissingRoom }: { path: string; send: PlatformSend; connecting: boolean; onMissingRoom: (msg: string) => void }) {
+  const code = roomCodeFromPath(path);
+  const [invite, setInvite] = useState<RoomInfo | null>(null);
+
+  useEffect(() => {
+    setInvite(null);
+    if (!code || loadSession()?.code === code) return;
+    let cancelled = false;
+    fetch(`/api/rooms/${code}`)
+      .then((res) => (res.ok ? (res.json() as Promise<RoomInfo>) : null))
+      .then((info) => {
+        if (cancelled) return;
+        if (info) setInvite(info);
+        else {
+          onMissingRoom(`Aucun salon ${code} : il a peut-être fermé.`);
+          navigate("/", { replace: true });
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+
+  if (code) {
+    // Reprise en cours, ou lien d'invitation : on affiche la page du bon jeu, code prérempli.
+    const game = invite?.game ?? loadSession()?.game;
+    if (!game) return <div class="page" aria-busy="true" />;
+    const { Home } = GAME_CLIENTS[game];
+    return <Home send={send} initialCode={code} connecting={connecting} />;
+  }
+
+  const slug = path.replace(/^\/|\/$/g, "");
+  if (slug && !isGameId(slug)) queueMicrotask(() => navigate("/", { replace: true }));
+  if (slug && isGameId(slug)) {
+    const { Home } = GAME_CLIENTS[slug];
+    return <Home send={send} initialCode={null} connecting={connecting} />;
+  }
+  return <Hub send={send} connecting={connecting} />;
 }
 
 render(<App />, document.getElementById("app")!);

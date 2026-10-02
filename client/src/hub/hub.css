@@ -1,0 +1,326 @@
+/* Salle de jeux : page d'accueil générale. */
+
+.hub-main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.hub-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--space-8);
+  align-items: center;
+  padding-top: var(--space-6);
+}
+.hub-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.hub-join {
+  gap: var(--space-3);
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  min-width: 0;
+}
+.crumb-sep {
+  color: var(--foreground-muted);
+  font-size: 20px;
+}
+.crumb-current {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.025em;
+}
+
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.game-box {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  overflow: hidden;
+  animation: rise 0.5s ease-out backwards;
+  animation-delay: calc(var(--i) * 90ms + 100ms);
+}
+.game-box.is-playable {
+  grid-column: 1 / -1;
+  background: var(--background-overlay);
+  box-shadow: var(--shadow-lg);
+  transition:
+    transform 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.game-box.is-playable:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}
+.box-link {
+  display: flex;
+  flex-direction: column;
+}
+.is-playable .box-link {
+  flex-direction: row;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+.box-link:focus-visible {
+  outline-offset: -3px;
+  border-radius: var(--radius-xl);
+}
+
+.box-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse at 50% 115%, hsl(from var(--primary) h s l / 0.18), transparent 65%),
+    var(--background-raised);
+}
+.is-playable .box-cover {
+  flex: 0 0 52%;
+  min-height: 320px;
+  border-bottom: 0;
+  border-right: 1px solid var(--border);
+}
+.is-playable .box-body {
+  padding: var(--space-8);
+  justify-content: center;
+  gap: var(--space-3);
+}
+.is-upcoming .box-cover {
+  aspect-ratio: 16 / 9;
+}
+
+.rumeurs-cover {
+  position: relative;
+  width: 360px;
+  height: 220px;
+}
+.cover-slot {
+  position: absolute;
+  left: calc(50% - 46px + (var(--i) - 1.5) * 74px);
+  top: 46px;
+  transform: rotate(calc((var(--i) - 1.5) * 8deg)) translateY(calc((var(--i) - 1.5) * (var(--i) - 1.5) * 6px));
+  transform-origin: 50% 130%;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+.cover-slot .card-md {
+  width: 112px;
+}
+.game-box.is-playable:hover .cover-slot {
+  transform: rotate(calc((var(--i) - 1.5) * 12deg)) translateX(calc((var(--i) - 1.5) * 14px)) translateY(-8px);
+}
+
+.upcoming-cover {
+  width: 70%;
+  max-height: 80%;
+  color: var(--foreground-muted);
+}
+.upcoming-rosette {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 0.3;
+  opacity: 0.5;
+}
+.box-ribbon {
+  position: absolute;
+  top: 14px;
+  right: -34px;
+  width: 130px;
+  padding: 2px 0;
+  transform: rotate(35deg);
+  text-align: center;
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.box-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  flex: 1;
+}
+.is-upcoming .box-body {
+  padding: var(--space-4);
+}
+.is-upcoming .box-body h3 {
+  color: var(--foreground-muted);
+}
+.box-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.is-playable .box-title-row h3 {
+  font-size: 30px;
+  line-height: 36px;
+}
+.box-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding: var(--space-1-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  transition: filter 0.3s;
+}
+.box-cta .icon {
+  transition: transform 0.3s;
+}
+.game-box.is-playable:hover .box-cta {
+  filter: brightness(115%);
+}
+.game-box.is-playable:hover .box-cta .icon {
+  transform: translateX(2px);
+}
+.box-tagline {
+  font-weight: 600;
+}
+.is-upcoming .box-tagline {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--foreground-muted);
+}
+.box-pitch {
+  max-width: 44em;
+}
+.box-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+.box-tags li {
+  padding: 1px var(--space-2-5);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--background);
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--foreground-muted);
+}
+
+.hub-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.hub-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-top: 2px solid var(--primary);
+  background: var(--background-raised);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+.hub-steps p {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--foreground-muted);
+}
+
+@media (max-width: 1100px) {
+  .is-playable .box-cover {
+    flex-basis: 46%;
+  }
+  .hub-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shelf {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .shelf .is-upcoming:last-child {
+    grid-column: 1 / -1;
+  }
+  .is-upcoming:last-child .box-cover {
+    aspect-ratio: 32 / 9;
+  }
+}
+
+@media (max-width: 720px) {
+  .hub-main {
+    padding: var(--space-4);
+    gap: var(--space-6);
+  }
+  .shelf,
+  .hub-steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .shelf .is-upcoming:last-child {
+    grid-column: auto;
+  }
+  .is-upcoming:last-child .box-cover {
+    aspect-ratio: 16 / 9;
+  }
+  .is-playable .box-link {
+    flex-direction: column;
+  }
+  .is-playable .box-cover {
+    min-height: 220px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .is-playable .box-body {
+    padding: var(--space-5);
+  }
+  .rumeurs-cover {
+    transform: scale(0.8);
+  }
+  .crumb-current,
+  .crumb-sep {
+    font-size: 16px;
+  }
+  .crumbs .brand-name {
+    display: none;
+  }
+}
+
+.footer a {
+  color: var(--foreground-muted);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer a:hover {
+  color: var(--foreground);
+}

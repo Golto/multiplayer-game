@@ -1,34 +1,31 @@
 import { useState } from "preact/hooks";
-import { CODE_LENGTH, COMMODITIES, RULES } from "../../../shared/protocol";
-import { Card, Watermark } from "../art";
-import { Icon } from "../icons";
-import type { Send } from "../main";
-import { Brand, SoundToggle, ThemeToggle } from "./common";
-
-const NAME_KEY = "rumeurs.name";
-
-function savedName(): string {
-  try {
-    return localStorage.getItem(NAME_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
+import { COMMODITIES, RULES } from "../../../../shared/games/rumeurs";
+import { CODE_LENGTH, NAME_MAX } from "../../../../shared/platform";
+import { Card, Watermark } from "./art";
+import { Icon } from "../../ui/icons";
+import type { HomeProps } from "../types";
+import { rememberName, savedName } from "../../ui/name";
+import { Brand, Link, SoundToggle, ThemeToggle } from "../../ui/chrome";
 
 const HERO_VALUES = [6, -4, 2, -8];
 
-export function Home({ send, initialCode, connecting }: { send: Send; initialCode: string | null; connecting: boolean }) {
+/** Couverture de la boîte de jeu dans la salle : les quatre marchandises en éventail. */
+export function Cover() {
+  return (
+    <div class="rumeurs-cover" aria-hidden="true">
+      {COMMODITIES.map((c, i) => (
+        <div class="cover-slot" style={{ "--i": i } as never}>
+          <Card commodity={c.id} value={HERO_VALUES[i]!} size="md" serial={17 + i * 23} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Home({ send, initialCode, connecting }: HomeProps) {
   const [name, setName] = useState(savedName);
   const [code, setCode] = useState(initialCode ?? "");
   const [nameError, setNameError] = useState(false);
-
-  const remember = () => {
-    try {
-      localStorage.setItem(NAME_KEY, name.trim());
-    } catch {
-      // Sans stockage, on redemandera le pseudo.
-    }
-  };
 
   const withName = (action: () => void) => {
     if (!name.trim()) {
@@ -36,11 +33,11 @@ export function Home({ send, initialCode, connecting }: { send: Send; initialCod
       document.getElementById("name")?.focus();
       return;
     }
-    remember();
+    rememberName(name);
     action();
   };
 
-  const create = () => withName(() => send({ t: "create", name }));
+  const create = () => withName(() => send({ t: "create", game: "rumeurs", name }));
   const join = (e?: Event) => {
     e?.preventDefault();
     withName(() => send({ t: "join", code, name }));
@@ -50,7 +47,15 @@ export function Home({ send, initialCode, connecting }: { send: Send; initialCod
     <div class="page home">
       <Watermark />
       <header class="topbar">
-        <Brand />
+        <nav class="crumbs" aria-label="Fil d'Ariane">
+          <Brand href="/" />
+          <span class="crumb-sep" aria-hidden="true">
+            /
+          </span>
+          <span class="crumb-current" aria-current="page">
+            Rumeurs
+          </span>
+        </nav>
         <div class="topbar-actions">
           <SoundToggle />
           <ThemeToggle />
@@ -88,7 +93,7 @@ export function Home({ send, initialCode, connecting }: { send: Send; initialCod
               id="name"
               class={`input ${nameError ? "is-invalid" : ""}`}
               value={name}
-              maxLength={RULES.nameMax}
+              maxLength={NAME_MAX}
               autocomplete="nickname"
               placeholder="Ex. Léa la Fouine"
               onInput={(e) => {
@@ -166,7 +171,9 @@ export function Home({ send, initialCode, connecting }: { send: Send; initialCod
         </ol>
       </section>
 
-      <footer class="footer muted small">Un jeu golpex · fait pour les soirées entre amis</footer>
+      <footer class="footer muted small">
+        <Link href="/">← Tous les jeux de la salle</Link>
+      </footer>
     </div>
   );
 }

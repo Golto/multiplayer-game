@@ -1,9 +1,12 @@
 // Connexion WebSocket avec reconnexion automatique et reprise de place.
 
-import type { ClientMessage, GameView, ServerMessage } from "../../shared/protocol";
+import type { ClientMessage, GameId, ServerMessage } from "../../shared/platform";
+
+export type PlatformSend = (msg: ClientMessage) => void;
 
 export interface Session {
   code: string;
+  game: GameId;
   playerId: string;
   token: string;
 }
@@ -11,7 +14,7 @@ export interface Session {
 export type Status = "connecting" | "open" | "closed";
 
 interface Handlers {
-  onState(state: GameView, clockOffset: number): void;
+  onState(game: GameId, state: unknown): void;
   onJoined(session: Session): void;
   onError(message: string, fatal: boolean): void;
   onStatus(status: Status): void;
@@ -56,15 +59,18 @@ export class Connection {
       this.retry = 0;
       this.handlers.onStatus("open");
       const session = loadSession();
-      if (session) ws.send(JSON.stringify({ t: "resume", ...session } satisfies ClientMessage));
+      if (session) {
+        const { code, playerId, token } = session;
+        ws.send(JSON.stringify({ t: "resume", code, playerId, token } satisfies ClientMessage));
+      }
       for (const msg of this.queue.splice(0)) ws.send(JSON.stringify(msg));
     };
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(String(event.data)) as ServerMessage;
-      if (msg.t === "state") this.handlers.onState(msg.state, msg.state.serverNow - Date.now());
+      if (msg.t === "state") this.handlers.onState(msg.game, msg.state);
       else if (msg.t === "joined") {
-        const session = { code: msg.code, playerId: msg.playerId, token: msg.token };
+        const session = { code: msg.code, game: msg.game, playerId: msg.playerId, token: msg.token };
         saveSession(session);
         this.handlers.onJoined(session);
       } else if (msg.t === "error") this.handlers.onError(msg.message, !!msg.fatal);

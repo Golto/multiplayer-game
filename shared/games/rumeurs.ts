@@ -1,4 +1,4 @@
-// Types et constantes partagés entre le serveur et le client.
+// Rumeurs : types, règles et actions partagés entre le serveur et le client.
 
 export type CommodityId = "safran" | "cuivre" | "cacao" | "indigo";
 
@@ -45,11 +45,7 @@ export const RULES = {
   marketSeconds: 75,
   reportSeconds: 30,
   freeTextMax: 90,
-  nameMax: 16,
 } as const;
-
-export const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const CODE_LENGTH = 5;
 
 // ---------------------------------------------------------------- rumeurs
 
@@ -148,23 +144,15 @@ export interface GameView {
   final: FinalResult | null;
 }
 
-// ---------------------------------------------------------------- messages
+// ---------------------------------------------------------------- actions
 
-export type ClientMessage =
-  | { t: "create"; name: string }
-  | { t: "join"; code: string; name: string }
-  | { t: "resume"; code: string; playerId: string; token: string }
+/** Actions qu'un joueur envoie au jeu, dans l'enveloppe `{ t: "action" }` de la plateforme. */
+export type RumeursAction =
   | { t: "start" }
   | { t: "rumor"; rumor: RumorInput }
   | { t: "orders"; orders: Record<CommodityId, number> }
   | { t: "ready" }
-  | { t: "rematch" }
-  | { t: "leave" };
-
-export type ServerMessage =
-  | { t: "joined"; code: string; playerId: string; token: string }
-  | { t: "state"; state: GameView }
-  | { t: "error"; message: string; fatal?: boolean };
+  | { t: "rematch" };
 
 // ---------------------------------------------------------------- utilitaires
 

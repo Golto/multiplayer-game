@@ -1,9 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
-import { COMMODITY_IDS, RULES, describeRumor, formatSigned, type GameView, type PublicPlayer } from "../../../shared/protocol";
-import { Card, CommodityGlyph, PlayerSeal, accentVar, commodityInfo } from "../art";
-import { Icon } from "../icons";
-import { play } from "../sound/engine";
-import type { Send } from "../main";
+import { COMMODITY_IDS, RULES, describeRumor, formatSigned, type GameView, type PublicPlayer } from "../../../../shared/games/rumeurs";
+import { Card, CommodityGlyph, PlayerSeal, accentVar, commodityInfo } from "./art";
+import { Icon } from "../../ui/icons";
+import { play } from "../../sound/engine";
+import type { Send } from "./types";
 import { Dispatch, serialOf } from "./Game";
 
 interface Props {
