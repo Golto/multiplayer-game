@@ -15,6 +15,7 @@ export type Status = "connecting" | "open" | "closed";
 
 interface Handlers {
   onState(game: GameId, state: unknown): void;
+  onEvent(game: GameId, event: unknown): void;
   onJoined(session: Session): void;
   onError(message: string, fatal: boolean): void;
   onStatus(status: Status): void;
@@ -69,6 +70,7 @@ export class Connection {
     ws.onmessage = (event) => {
       const msg = JSON.parse(String(event.data)) as ServerMessage;
       if (msg.t === "state") this.handlers.onState(msg.game, msg.state);
+      else if (msg.t === "event") this.handlers.onEvent(msg.game, msg.event);
       else if (msg.t === "joined") {
         const session = { code: msg.code, game: msg.game, playerId: msg.playerId, token: msg.token };
         saveSession(session);

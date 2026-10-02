@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeu disponible : **Rumeurs**. Cartographes, Puits et Topologie apparaissent comme « Bientôt » (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs** et **Topologie**. Cartographes et Puits apparaissent comme « Bientôt » (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -20,6 +20,16 @@ Jeu disponible : **Rumeurs**. Cartographes, Puits et Topologie apparaissent comm
   3. **Clôture** : les échanges de chacun sont rendus publics, puis la carte d'un joueur est retournée. Les rumeurs vérifiables sont tamponnées « Confirmé » ou « Démenti ».
 - À la fin, toutes les cartes sont dévoilées. Le score est la caisse plus les lots au vrai cours. Des distinctions sont attribuées : Langue de vipère, Parole d'or, Flair de fouine…
 
+## Topologie
+
+Conquête de territoire en temps réel, de 2 à 8 joueurs, sur un plateau carré dont les bords se recollent.
+
+- Hors de ton territoire, tu laisses une traîne. En rentrant, la traîne devient territoire, ainsi que chaque région qu'elle sépare du reste du plateau, sauf la plus grande. Sur un tore, une boucle qui fait le tour du plateau ne sépare rien : elle ne rapporte que sa traîne.
+- Traverser la traîne d'un joueur le fait tomber, traverser la sienne aussi ; deux têtes qui se percutent tombent toutes les deux. On revient deux secondes plus tard au cœur de son territoire.
+- 3 manches de 2 minutes, chacune sur une surface tirée au sort parmi le **tore**, le **ruban de Möbius** (murs en haut et en bas), la **bouteille de Klein** et le **plan projectif**. Les flèches sur les bords suivent la notation des topologues : même sens, recollement droit ; sens contraires, recollement en miroir. Les marges autour du plateau montrent ce qu'il y a de l'autre côté de chaque bord.
+- Commandes : flèches, ZQSD ou WASD ; glissés du doigt ou croix directionnelle sur téléphone.
+- Le serveur avance la partie 8 fois par seconde et n'envoie que les cases qui ont changé (`TickMessage`) ; l'état complet ne part qu'aux changements de phase et aux reconnexions.
+
 ## Développer
 
 ```bash
@@ -28,6 +38,8 @@ npm run dev        # serveur WebSocket sur :3001 + client Vite sur http://localh
 npm test           # tests de la logique de jeu
 npm run typecheck
 ```
+
+`TOPO_ROUND_SECONDS=20 npm start` raccourcit les manches de Topologie, pratique pour tester.
 
 Pour tester seul, ouvre trois onglets ou fenêtres de navigation privée. Chaque onglet garde sa place grâce au `localStorage`, donc les fenêtres privées séparées sont le plus simple.
 
@@ -40,23 +52,26 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/platform.ts` | Messages communs : créer, rejoindre, reprendre, quitter, et `action` (propre au jeu) |
 | `shared/catalog.ts` | Les jeux affichés dans la salle, jouables ou à venir |
 | `shared/games/rumeurs.ts` | Types, règles et actions de Rumeurs |
+| `shared/games/topologie.ts` | Surfaces et recollements, règles, messages de Topologie |
 | `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
 | `server/games/rumeurs/` | Logique de Rumeurs et ses tests |
+| `server/games/topologie/` | Simulation de Topologie et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
 | `client/src/games/rumeurs/` | Page, couverture, écrans, cartes et sons de Rumeurs |
-| `client/src/ui/` | En-tête, icônes, guillochis, pseudo mémorisé |
+| `client/src/games/topologie/` | Page, couverture, arène en canvas, schémas de surfaces |
+| `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |
 
 ## Ajouter un jeu
 
 1. **Partagé** : ajouter son identifiant à `GameId` (`shared/platform.ts`), ses types et actions dans `shared/games/<jeu>.ts`, et passer son entrée de `shared/catalog.ts` en `status: "jouable"`.
-2. **Serveur** : écrire une classe qui implémente `GameRoom` (`server/platform.ts`) dans `server/games/<jeu>/`, puis l'enregistrer dans `server/games/registry.ts`. La méthode `handle` reçoit les actions des joueurs, `view` renvoie ce que chaque joueur a le droit de voir.
-3. **Client** : fournir `Home`, `Cover` et `Room` (`client/src/games/types.ts`) dans `client/src/games/<jeu>/`, puis les enregistrer dans `client/src/games/registry.ts`.
+2. **Serveur** : écrire une classe qui implémente `GameRoom` (`server/platform.ts`) dans `server/games/<jeu>/`, puis l'enregistrer dans `server/games/registry.ts`. La méthode `handle` reçoit les actions des joueurs, `view` renvoie ce que chaque joueur a le droit de voir. Le `RoomHost` reçu à la création sert à prévenir d'un changement (`changed`, chaque joueur reçoit sa vue) ou à diffuser un événement léger (`emit`, pour le temps réel).
+3. **Client** : fournir `Home`, `Cover` et `Room` (`client/src/games/types.ts`) dans `client/src/games/<jeu>/`, puis les enregistrer dans `client/src/games/registry.ts`. `RoomLobby` et `EntryPanel` (`client/src/ui/`) donnent la salle d'attente et le formulaire d'entrée ; `subscribe` reçoit les événements diffusés par `emit`.
 
 La salle, les routes `/<jeu>` et `/r/CODE`, la reconnexion, le thème et les sons d'interface fonctionnent alors sans autre code.
 

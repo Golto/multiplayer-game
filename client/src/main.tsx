@@ -30,6 +30,7 @@ function App() {
   const [status, setStatus] = useState<Status>("connecting");
   const [toast, setToast] = useState<string | null>(null);
   const joined = useRef(false);
+  const listeners = useRef(new Set<(event: unknown) => void>());
 
   const conn = useMemo(() => {
     const urlCode = roomCodeFromPath(location.pathname);
@@ -37,6 +38,7 @@ function App() {
     if (session && urlCode && session.code !== urlCode) saveSession(null);
     return new Connection({
       onState: (game, state) => setRoom({ game, state }),
+      onEvent: (_game, event) => listeners.current.forEach((l) => l(event)),
       onJoined: (session) => {
         joined.current = true;
         navigate(`/r/${session.code}`, { replace: true });
@@ -67,6 +69,13 @@ function App() {
   }, [toast]);
 
   const send: PlatformSend = (msg) => conn.send(msg);
+  const subscribe = useMemo(
+    () => (listener: (event: unknown) => void) => {
+      listeners.current.add(listener);
+      return () => void listeners.current.delete(listener);
+    },
+    [],
+  );
 
   const leave = () => {
     const game = room?.game;
@@ -80,7 +89,14 @@ function App() {
   let screen;
   if (room) {
     const { Room: RoomScreen } = GAME_CLIENTS[room.game];
-    screen = <RoomScreen state={room.state} sendAction={(action) => send({ t: "action", action })} onLeave={leave} />;
+    screen = (
+      <RoomScreen
+        state={room.state}
+        sendAction={(action) => send({ t: "action", action })}
+        subscribe={subscribe}
+        onLeave={leave}
+      />
+    );
   } else {
     screen = <Route path={path} send={send} connecting={status !== "open"} onMissingRoom={setToast} />;
   }

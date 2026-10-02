@@ -20,17 +20,7 @@ export const COMMODITIES: readonly CommodityInfo[] = [
 
 export const COMMODITY_IDS: readonly CommodityId[] = COMMODITIES.map((c) => c.id);
 
-/** Couleurs de joueurs, prises dans les accents Golpex restants. */
-export const PLAYER_ACCENTS = [
-  "amethyst",
-  "green",
-  "yellow",
-  "pink",
-  "bluesky",
-  "magenta",
-  "greenlemon",
-  "crystalblue",
-] as const;
+export { PLAYER_ACCENTS } from "../platform.js";
 
 export const RULES = {
   minPlayers: 3,

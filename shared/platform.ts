@@ -1,10 +1,22 @@
 // Plateforme : salons privés, codes et messages communs à tous les jeux.
 
-export type GameId = "rumeurs";
+export type GameId = "rumeurs" | "topologie";
 
 export const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const CODE_LENGTH = 5;
 export const NAME_MAX = 16;
+
+/** Couleurs de joueurs, prises dans les accents Golpex (couleurs de données). */
+export const PLAYER_ACCENTS = [
+  "amethyst",
+  "green",
+  "yellow",
+  "pink",
+  "bluesky",
+  "magenta",
+  "greenlemon",
+  "crystalblue",
+] as const;
 
 export type ClientMessage =
   | { t: "create"; game: GameId; name: string }
@@ -17,6 +29,8 @@ export type ClientMessage =
 export type ServerMessage =
   | { t: "joined"; code: string; game: GameId; playerId: string; token: string }
   | { t: "state"; game: GameId; state: unknown }
+  /** Mise à jour légère et fréquente (ticks d'un jeu en temps réel), identique pour tous. */
+  | { t: "event"; game: GameId; event: unknown }
   | { t: "error"; message: string; fatal?: boolean };
 
 /** Réponse de GET /api/rooms/:code, pour savoir à quel jeu mène un lien d'invitation. */

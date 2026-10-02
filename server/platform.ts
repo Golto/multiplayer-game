@@ -27,7 +27,15 @@ export interface GameRoom {
   dispose(): void;
 }
 
+/** Ce que la plateforme offre à un jeu pour parler à ses joueurs. */
+export interface RoomHost {
+  /** L'état a changé : chaque joueur reçoit sa vue complète (`view`). */
+  changed(): void;
+  /** Événement léger diffusé tel quel à tous les joueurs du salon. */
+  emit(event: unknown): void;
+}
+
 export interface GameDefinition {
   id: GameId;
-  create(code: string, onChange: () => void): GameRoom;
+  create(code: string, host: RoomHost): GameRoom;
 }
