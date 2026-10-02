@@ -1,0 +1,35 @@
+{
+  "name": "rumeurs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rumeurs — jeu de bluff boursier multijoueur dans le navigateur, salons privés par code.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,client \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:client": "vite",
+    "build": "vite build && esbuild server/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
+    "start": "node dist/server.js",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^11.0.0",
+    "sirv": "^3.0.2",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^26.6.4",
+    "@types/ws": "^8.18.2",
+    "concurrently": "^10.0.5",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  }
+}
