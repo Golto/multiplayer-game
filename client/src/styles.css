@@ -301,12 +301,23 @@ textarea {
   width: var(--logo-xs);
   height: var(--logo-xs);
 }
-.logo-dark,
-.dark .logo-light {
-  display: none;
+.sound-toggle {
+  position: relative;
 }
-.dark .logo-dark {
-  display: block;
+.sound-toggle.is-muted {
+  color: var(--foreground-muted);
+}
+.sound-toggle.is-muted::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  box-shadow: 0 0 0 2px var(--background-raised);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 .brand-name {
   font-weight: 700;

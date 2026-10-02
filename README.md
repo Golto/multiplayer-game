@@ -47,7 +47,18 @@ Le dépôt contient un `render.yaml`.
 
 Avec l'offre gratuite, le service s'endort après 15 minutes sans visite et le premier chargement prend alors environ une minute. Les salons sont gardés en mémoire : un redéploiement ou une mise en veille les efface.
 
+## Sound design
+
+Les sons sont synthétisés en direct avec Web Audio à partir de la palette `client/src/sound/palette-goutte.json` (accordage Fa4 +43 ¢, gamme majeure, matière « Goutte »), sans fichier audio. `client/src/sound/engine.ts` joue un jeton (`play("feedback.success")`) et `client/src/sound/wiring.ts` les relie à l'interface :
+
+- chaque bouton joue son attribut `data-sound` (par défaut `button.primary` ou `button.tap`, `none` pour le rendre muet) ;
+- la saisie joue `input.key` / `input.delete` ;
+- les événements de partie : arrivée d'un joueur, lancement, ouverture et clôture du marché, révélation, tampons Confirmé/Démenti, compte à rebours, dévoilement final, perte de connexion.
+
+La cloche dans l'en-tête coupe les sons (préférence gardée dans le navigateur).
+
 ## Écarts par rapport à Golpex
 
 - `danger-strong` et `success-strong` ont été ajoutés sur le modèle de `warning-strong`, pour que les valeurs positives et négatives atteignent 4.5:1 sur les surfaces claires.
 - Le titre d'accueil dépasse l'échelle `heading-1` (taille d'affiche).
+- Le logo reste en couleur (`golpex.svg`) dans les deux thèmes.

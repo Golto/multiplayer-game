@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { ClientMessage, GameView } from "../../shared/protocol";
 import { Connection, loadSession, saveSession, type Status } from "./net";
 import { initTheme } from "./theme";
+import { play } from "./sound/engine";
+import { installUiSounds, useGameSounds } from "./sound/wiring";
 import { Home } from "./screens/Home";
 import { Lobby } from "./screens/Lobby";
 import { GameScreen } from "./screens/Game";
@@ -11,6 +13,7 @@ import "./tokens.css";
 import "./styles.css";
 
 initTheme();
+installUiSounds();
 
 export type Send = (msg: ClientMessage) => void;
 
@@ -49,12 +52,14 @@ function App() {
           setView(null);
         }
         setToast(message);
+        play("feedback.warning");
       },
       onStatus: setStatus,
     });
   }, []);
 
   useEffect(() => conn.connect(), [conn]);
+  useGameSounds(view, status);
 
   useEffect(() => {
     if (!toast) return;

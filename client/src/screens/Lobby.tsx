@@ -3,7 +3,7 @@ import { RULES, type GameView } from "../../../shared/protocol";
 import { PlayerSeal, Watermark } from "../art";
 import { Icon } from "../icons";
 import type { Send } from "../main";
-import { Brand, ThemeToggle } from "./common";
+import { Brand, SoundToggle, ThemeToggle } from "./common";
 
 export function Lobby({ view, send, onLeave }: { view: GameView; send: Send; onLeave: () => void }) {
   const [copied, setCopied] = useState(false);
@@ -31,8 +31,9 @@ export function Lobby({ view, send, onLeave }: { view: GameView; send: Send; onL
       <header class="topbar">
         <Brand />
         <div class="topbar-actions">
+          <SoundToggle />
           <ThemeToggle />
-          <button class="btn btn-ghost" type="button" onClick={onLeave}>
+          <button class="btn btn-ghost" type="button" data-sound="nav.back" onClick={onLeave}>
             <Icon name="arrowLeft" size={16} /> Quitter
           </button>
         </div>
@@ -53,7 +54,7 @@ export function Lobby({ view, send, onLeave }: { view: GameView; send: Send; onL
           </div>
           <p class="muted">Donne ce code à tes amis, ou envoie-leur directement le lien.</p>
           <div class="code-actions">
-            <button class="btn btn-outline" type="button" onClick={copy}>
+            <button class="btn btn-outline" type="button" data-sound="feedback.success" onClick={copy}>
               <Icon name={copied ? "check" : "envelope"} size={16} />
               {copied ? "Lien copié" : "Copier le lien d'invitation"}
             </button>

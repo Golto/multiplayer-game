@@ -1,0 +1,1334 @@
+{
+  "generatedAt": "2026-09-29T18:41:03.608Z",
+  "systemVersion": "1.0.0",
+  "tuning": {
+    "rootHz": 358,
+    "rootNote": "Fa4 +43 ¢",
+    "scale": "majeur",
+    "scaleSteps": [
+      0,
+      2,
+      4,
+      5,
+      7,
+      9,
+      11
+    ],
+    "temperament": "equal"
+  },
+  "material": {
+    "key": "goutte",
+    "label": "Goutte",
+    "engine": "chirp",
+    "durationFactor": 0.55,
+    "voice": {
+      "waveform": "sine",
+      "shape": "rise_to",
+      "depth": 2.2,
+      "timeRatio": 0.26,
+      "holdRatio": 0,
+      "harmonicGain": 0,
+      "vibratoHz": 0,
+      "vibratoCents": 0,
+      "repeats": 1,
+      "repeatGap": 0
+    }
+  },
+  "character": {
+    "grain": 0.31,
+    "weight": 0.18,
+    "brightness": 0.54,
+    "hold": 0.9,
+    "space": 0,
+    "level": 0.8
+  },
+  "categories": {
+    "boutons": {
+      "label": "Boutons et appuis",
+      "tokens": [
+        {
+          "tokenId": "button.tap",
+          "label": "Appui",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.25,
+          "durationMs": 297,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 247,
+              "gain": 0.85
+            }
+          ]
+        },
+        {
+          "tokenId": "button.primary",
+          "label": "Action principale",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 453,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 265,
+              "gain": 0.8
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 50,
+              "durationMs": 353,
+              "gain": 0.7
+            }
+          ]
+        },
+        {
+          "tokenId": "button.secondary",
+          "label": "Action secondaire",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 238,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 188,
+              "gain": 0.5
+            }
+          ]
+        },
+        {
+          "tokenId": "button.hover",
+          "label": "Survol",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.4,
+          "durationMs": 168,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.16
+            }
+          ]
+        },
+        {
+          "tokenId": "button.blocked",
+          "label": "Indisponible",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 227,
+          "notes": [
+            {
+              "degree": -1,
+              "frequencyHz": 337.91,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "press.hold",
+          "label": "Appui long, tension",
+          "behaviour": "sustained",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 756,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 706,
+              "gain": 0.32
+            }
+          ]
+        },
+        {
+          "tokenId": "press.commit",
+          "label": "Appui long, déclenchement",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 517,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 206,
+              "gain": 0.7
+            },
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 55,
+              "durationMs": 412,
+              "gain": 0.65
+            }
+          ]
+        },
+        {
+          "tokenId": "press.abort",
+          "label": "Appui long, abandon",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 215,
+          "notes": [
+            {
+              "degree": -1,
+              "frequencyHz": 337.91,
+              "offsetMs": 0,
+              "durationMs": 165,
+              "gain": 0.38
+            }
+          ]
+        }
+      ]
+    },
+    "valeurs": {
+      "label": "Sliders et valeurs",
+      "tokens": [
+        {
+          "tokenId": "slider.grab",
+          "label": "Saisie de la poignée",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 179,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 129,
+              "gain": 0.4
+            }
+          ]
+        },
+        {
+          "tokenId": "slider.tick",
+          "label": "Cran",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.45,
+          "durationMs": 103,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 53,
+              "gain": 0.2
+            }
+          ]
+        },
+        {
+          "tokenId": "slider.detent",
+          "label": "Point d'ancrage",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.15,
+          "durationMs": 245,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.45
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 30,
+              "durationMs": 165,
+              "gain": 0.3
+            }
+          ]
+        },
+        {
+          "tokenId": "slider.limit",
+          "label": "Butée",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.1,
+          "durationMs": 250,
+          "notes": [
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 0,
+              "durationMs": 200,
+              "gain": 0.5
+            }
+          ]
+        },
+        {
+          "tokenId": "slider.release",
+          "label": "Lâcher de la poignée",
+          "behaviour": "one_shot",
+          "tracksValue": true,
+          "variation": 0,
+          "durationMs": 203,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 153,
+              "gain": 0.34
+            }
+          ]
+        },
+        {
+          "tokenId": "stepper.increment",
+          "label": "Incrément",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.2,
+          "durationMs": 144,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.42
+            }
+          ]
+        },
+        {
+          "tokenId": "stepper.decrement",
+          "label": "Décrément",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.2,
+          "durationMs": 144,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.42
+            }
+          ]
+        }
+      ]
+    },
+    "navigation": {
+      "label": "Carrousels et navigation",
+      "tokens": [
+        {
+          "tokenId": "carousel.next",
+          "label": "Élément suivant",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.12,
+          "durationMs": 306,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 106,
+              "gain": 0.42
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 50,
+              "durationMs": 206,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "carousel.previous",
+          "label": "Élément précédent",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.12,
+          "durationMs": 306,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 106,
+              "gain": 0.42
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 50,
+              "durationMs": 206,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "carousel.wrap",
+          "label": "Retour au début",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 375,
+          "notes": [
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.35
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 60,
+              "durationMs": 265,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "carousel.end",
+          "label": "Fin de liste",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.1,
+          "durationMs": 227,
+          "notes": [
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.42
+            }
+          ]
+        },
+        {
+          "tokenId": "nav.forward",
+          "label": "Page suivante",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 439,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 129,
+              "gain": 0.38
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 65,
+              "durationMs": 324,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "nav.back",
+          "label": "Page précédente",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 439,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 129,
+              "gain": 0.38
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 65,
+              "durationMs": 324,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "nav.tab",
+          "label": "Changement d'onglet",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.15,
+          "durationMs": 168,
+          "notes": [
+            {
+              "degree": 5,
+              "frequencyHz": 602.08,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "panneaux": {
+      "label": "Déplis et panneaux",
+      "tokens": [
+        {
+          "tokenId": "disclosure.expand",
+          "label": "Déplier",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 464,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.3
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 45,
+              "durationMs": 141,
+              "gain": 0.32
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 90,
+              "durationMs": 324,
+              "gain": 0.36
+            }
+          ]
+        },
+        {
+          "tokenId": "disclosure.collapse",
+          "label": "Replier",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 423,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 106,
+              "gain": 0.3
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 45,
+              "durationMs": 129,
+              "gain": 0.3
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 90,
+              "durationMs": 283,
+              "gain": 0.36
+            }
+          ]
+        },
+        {
+          "tokenId": "drawer.open",
+          "label": "Ouverture du tiroir",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 681,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.3
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 80,
+              "durationMs": 206,
+              "gain": 0.32
+            },
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 160,
+              "durationMs": 471,
+              "gain": 0.4
+            }
+          ]
+        },
+        {
+          "tokenId": "drawer.close",
+          "label": "Fermeture du tiroir",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 563,
+          "notes": [
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 0,
+              "durationMs": 129,
+              "gain": 0.3
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 60,
+              "durationMs": 153,
+              "gain": 0.32
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 130,
+              "durationMs": 383,
+              "gain": 0.42
+            }
+          ]
+        },
+        {
+          "tokenId": "modal.open",
+          "label": "Ouverture de la boîte de dialogue",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 650,
+          "notes": [
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 0,
+              "durationMs": 324,
+              "gain": 0.26
+            },
+            {
+              "degree": 9,
+              "frequencyHz": 902.1,
+              "offsetMs": 100,
+              "durationMs": 500,
+              "gain": 0.3
+            }
+          ]
+        },
+        {
+          "tokenId": "modal.close",
+          "label": "Fermeture de la boîte de dialogue",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 414,
+          "notes": [
+            {
+              "degree": 5,
+              "frequencyHz": 602.08,
+              "offsetMs": 0,
+              "durationMs": 165,
+              "gain": 0.3
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 70,
+              "durationMs": 294,
+              "gain": 0.34
+            }
+          ]
+        },
+        {
+          "tokenId": "tooltip.show",
+          "label": "Apparition d'une bulle d'aide",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.25,
+          "durationMs": 227,
+          "notes": [
+            {
+              "degree": 9,
+              "frequencyHz": 902.1,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.18
+            }
+          ]
+        }
+      ]
+    },
+    "selection": {
+      "label": "Interrupteurs et sélection",
+      "tokens": [
+        {
+          "tokenId": "toggle.on",
+          "label": "Activer",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 352,
+          "notes": [
+            {
+              "degree": 1,
+              "frequencyHz": 401.84,
+              "offsetMs": 0,
+              "durationMs": 153,
+              "gain": 0.58
+            },
+            {
+              "degree": 3,
+              "frequencyHz": 477.87,
+              "offsetMs": 55,
+              "durationMs": 247,
+              "gain": 0.66
+            }
+          ]
+        },
+        {
+          "tokenId": "toggle.off",
+          "label": "Désactiver",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 329,
+          "notes": [
+            {
+              "degree": 3,
+              "frequencyHz": 477.87,
+              "offsetMs": 0,
+              "durationMs": 153,
+              "gain": 0.58
+            },
+            {
+              "degree": 1,
+              "frequencyHz": 401.84,
+              "offsetMs": 55,
+              "durationMs": 224,
+              "gain": 0.54
+            }
+          ]
+        },
+        {
+          "tokenId": "checkbox.check",
+          "label": "Cocher",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.2,
+          "durationMs": 144,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.44
+            }
+          ]
+        },
+        {
+          "tokenId": "checkbox.uncheck",
+          "label": "Décocher",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.2,
+          "durationMs": 144,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.4
+            }
+          ]
+        },
+        {
+          "tokenId": "chip.select",
+          "label": "Sélectionner une étiquette",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.2,
+          "durationMs": 168,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.4
+            }
+          ]
+        },
+        {
+          "tokenId": "chip.deselect",
+          "label": "Retirer une étiquette",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.2,
+          "durationMs": 168,
+          "notes": [
+            {
+              "degree": 1,
+              "frequencyHz": 401.84,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.36
+            }
+          ]
+        }
+      ]
+    },
+    "saisie": {
+      "label": "Saisie",
+      "tokens": [
+        {
+          "tokenId": "input.key",
+          "label": "Frappe clavier",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.6,
+          "durationMs": 91,
+          "notes": [
+            {
+              "degree": 6,
+              "frequencyHz": 675.81,
+              "offsetMs": 0,
+              "durationMs": 41,
+              "gain": 0.18
+            }
+          ]
+        },
+        {
+          "tokenId": "input.delete",
+          "label": "Effacement",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.5,
+          "durationMs": 103,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 53,
+              "gain": 0.2
+            }
+          ]
+        },
+        {
+          "tokenId": "input.clear",
+          "label": "Tout effacer",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 345,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 94,
+              "gain": 0.35
+            },
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 60,
+              "durationMs": 235,
+              "gain": 0.4
+            }
+          ]
+        },
+        {
+          "tokenId": "input.suggestion",
+          "label": "Suggestion proposée",
+          "behaviour": "repeatable",
+          "tracksValue": false,
+          "variation": 0.3,
+          "durationMs": 335,
+          "notes": [
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 0,
+              "durationMs": 129,
+              "gain": 0.2
+            },
+            {
+              "degree": 9,
+              "frequencyHz": 902.1,
+              "offsetMs": 50,
+              "durationMs": 235,
+              "gain": 0.22
+            }
+          ]
+        },
+        {
+          "tokenId": "input.submit",
+          "label": "Envoi du formulaire",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 434,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 188,
+              "gain": 0.58
+            },
+            {
+              "degree": 5,
+              "frequencyHz": 602.08,
+              "offsetMs": 60,
+              "durationMs": 324,
+              "gain": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    "retours": {
+      "label": "Retours",
+      "tokens": [
+        {
+          "tokenId": "feedback.success",
+          "label": "Réussite",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 700,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 188,
+              "gain": 0.55
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 75,
+              "durationMs": 206,
+              "gain": 0.55
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 150,
+              "durationMs": 500,
+              "gain": 0.62
+            }
+          ]
+        },
+        {
+          "tokenId": "feedback.error",
+          "label": "Échec",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 493,
+          "notes": [
+            {
+              "degree": 1,
+              "frequencyHz": 401.84,
+              "offsetMs": 0,
+              "durationMs": 188,
+              "gain": 0.6
+            },
+            {
+              "degree": -1,
+              "frequencyHz": 337.91,
+              "offsetMs": 90,
+              "durationMs": 353,
+              "gain": 0.6
+            }
+          ]
+        },
+        {
+          "tokenId": "feedback.warning",
+          "label": "Avertissement",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 455,
+          "notes": [
+            {
+              "degree": 3,
+              "frequencyHz": 477.87,
+              "offsetMs": 0,
+              "durationMs": 153,
+              "gain": 0.55
+            },
+            {
+              "degree": 3,
+              "frequencyHz": 477.87,
+              "offsetMs": 140,
+              "durationMs": 265,
+              "gain": 0.5
+            }
+          ]
+        },
+        {
+          "tokenId": "feedback.notification",
+          "label": "Notification",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 581,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.48
+            },
+            {
+              "degree": 6,
+              "frequencyHz": 675.81,
+              "offsetMs": 90,
+              "durationMs": 441,
+              "gain": 0.55
+            }
+          ]
+        },
+        {
+          "tokenId": "feedback.complete",
+          "label": "Tâche terminée",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 779,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 153,
+              "gain": 0.45
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 85,
+              "durationMs": 165,
+              "gain": 0.48
+            },
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 170,
+              "durationMs": 559,
+              "gain": 0.6
+            }
+          ]
+        },
+        {
+          "tokenId": "feedback.undo",
+          "label": "Annulation",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 340,
+          "notes": [
+            {
+              "degree": 5,
+              "frequencyHz": 602.08,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.42
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 55,
+              "durationMs": 235,
+              "gain": 0.44
+            }
+          ]
+        }
+      ]
+    },
+    "deplacement": {
+      "label": "Glisser et tirer",
+      "tokens": [
+        {
+          "tokenId": "drag.lift",
+          "label": "Prise en main",
+          "behaviour": "sustained",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 1227,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 1177,
+              "gain": 0.22
+            }
+          ]
+        },
+        {
+          "tokenId": "drag.over",
+          "label": "Survol d'une cible",
+          "behaviour": "repeatable",
+          "tracksValue": true,
+          "variation": 0.3,
+          "durationMs": 132,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 82,
+              "gain": 0.24
+            }
+          ]
+        },
+        {
+          "tokenId": "drag.drop",
+          "label": "Dépôt",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 384,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 177,
+              "gain": 0.62
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 40,
+              "durationMs": 294,
+              "gain": 0.45
+            }
+          ]
+        },
+        {
+          "tokenId": "drag.reject",
+          "label": "Dépôt refusé",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 274,
+          "notes": [
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 0,
+              "durationMs": 224,
+              "gain": 0.48
+            }
+          ]
+        },
+        {
+          "tokenId": "refresh.pull",
+          "label": "Tirer pour rafraîchir",
+          "behaviour": "sustained",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 1227,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 1177,
+              "gain": 0.26
+            }
+          ]
+        },
+        {
+          "tokenId": "refresh.release",
+          "label": "Déclenchement du rafraîchissement",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 532,
+          "notes": [
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 0,
+              "durationMs": 165,
+              "gain": 0.55
+            },
+            {
+              "degree": 9,
+              "frequencyHz": 902.1,
+              "offsetMs": 70,
+              "durationMs": 412,
+              "gain": 0.55
+            }
+          ]
+        }
+      ]
+    },
+    "systeme": {
+      "label": "Cycle de vie",
+      "tokens": [
+        {
+          "tokenId": "system.start",
+          "label": "Démarrage",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 1007,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 294,
+              "gain": 0.35
+            },
+            {
+              "degree": 4,
+              "frequencyHz": 536.39,
+              "offsetMs": 140,
+              "durationMs": 294,
+              "gain": 0.35
+            },
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 280,
+              "durationMs": 677,
+              "gain": 0.42
+            }
+          ]
+        },
+        {
+          "tokenId": "system.ready",
+          "label": "Prêt",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 601,
+          "notes": [
+            {
+              "degree": 7,
+              "frequencyHz": 716,
+              "offsetMs": 0,
+              "durationMs": 165,
+              "gain": 0.4
+            },
+            {
+              "degree": 9,
+              "frequencyHz": 902.1,
+              "offsetMs": 80,
+              "durationMs": 471,
+              "gain": 0.42
+            }
+          ]
+        },
+        {
+          "tokenId": "system.lock",
+          "label": "Verrouillage",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 414,
+          "notes": [
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.5
+            },
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 70,
+              "durationMs": 294,
+              "gain": 0.55
+            }
+          ]
+        },
+        {
+          "tokenId": "system.unlock",
+          "label": "Déverrouillage",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 385,
+          "notes": [
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 0,
+              "durationMs": 118,
+              "gain": 0.5
+            },
+            {
+              "degree": 2,
+              "frequencyHz": 451.05,
+              "offsetMs": 70,
+              "durationMs": 265,
+              "gain": 0.5
+            }
+          ]
+        },
+        {
+          "tokenId": "system.offline",
+          "label": "Perte de connexion",
+          "behaviour": "one_shot",
+          "tracksValue": false,
+          "variation": 0,
+          "durationMs": 700,
+          "notes": [
+            {
+              "degree": 0,
+              "frequencyHz": 358,
+              "offsetMs": 0,
+              "durationMs": 206,
+              "gain": 0.5
+            },
+            {
+              "degree": -2,
+              "frequencyHz": 301.04,
+              "offsetMs": 120,
+              "durationMs": 530,
+              "gain": 0.5
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
