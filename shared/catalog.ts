@@ -41,7 +41,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Topologie",
     tagline: "Conquête sur des surfaces recollées",
     pitch:
-      "Trace des boucles pour agrandir ton territoire sur un tore, un ruban de Möbius, une bouteille de Klein ou un plan projectif. Les bords se recollent, parfois en miroir : sers-t'en pour piéger les autres.",
+      "Trace des boucles pour agrandir ton territoire sur un tore, un ruban de Möbius, une bouteille de Klein, un plan projectif, un cylindre ou une sphère. Les bords se recollent, parfois en miroir : sers-t'en pour piéger les autres.",
     players: "2 à 8",
     duration: "8 min",
     tags: ["Temps réel", "Territoire", "Mathématiques"],

@@ -4,10 +4,13 @@
 // sert au serveur (déplacements, remplissage) et au client (marges fantômes qui montrent ce qu'il
 // y a de l'autre côté d'un bord).
 
-export type SurfaceId = "tore" | "mobius" | "klein" | "projectif";
+export type SurfaceId = "tore" | "mobius" | "klein" | "projectif" | "cylindre" | "sphere";
 
-/** Recollement d'une paire de bords : droit, retourné (miroir) ou mur infranchissable. */
-export type Gluing = "droit" | "retourne" | "mur";
+/**
+ * Recollement d'une paire de bords : droit, retourné (miroir), mur infranchissable, ou « adjacent »
+ * (sphère) : le haut se recolle à la gauche et le bas à la droite, en tournant d'un quart de tour.
+ */
+export type Gluing = "droit" | "retourne" | "mur" | "adjacent";
 
 export interface SurfaceInfo {
   id: SurfaceId;
@@ -60,9 +63,27 @@ export const SURFACES: Record<SurfaceId, SurfaceInfo> = {
     euler: 1,
     hint: "Tous les bords se recollent en miroir : chaque sortie te renvoie de l'autre côté, inversé.",
   },
+  cylindre: {
+    id: "cylindre",
+    name: "Cylindre",
+    sides: "droit",
+    ends: "mur",
+    orientable: true,
+    euler: 0,
+    hint: "Gauche et droite se recollent ; le haut et le bas sont des murs. Une boucle qui fait le tour du cylindre n'enferme rien.",
+  },
+  sphere: {
+    id: "sphere",
+    name: "Sphère",
+    sides: "adjacent",
+    ends: "adjacent",
+    orientable: true,
+    euler: 2,
+    hint: "Le haut se recolle à la gauche, le bas à la droite : en passant un bord, tu tournes d'un quart de tour. Et sur une sphère, toute boucle enferme quelque chose.",
+  },
 };
 
-export const SURFACE_IDS: readonly SurfaceId[] = ["tore", "mobius", "klein", "projectif"];
+export const SURFACE_IDS: readonly SurfaceId[] = ["tore", "mobius", "klein", "projectif", "cylindre", "sphere"];
 
 export const RULES = {
   minPlayers: 2,
@@ -97,8 +118,10 @@ export interface Step {
   y: number;
   /** Le joueur vient de traverser un bord recollé. */
   wrapped: boolean;
-  /** …et ce bord était retourné : il revient en miroir. */
+  /** …et ce bord était retourné : il revient en miroir (ou, sur la sphère, en tournant). */
   twisted: boolean;
+  /** Nouvelle direction de marche, quand le recollement la fait tourner (sphère). */
+  dir?: Dir;
 }
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
@@ -110,6 +133,7 @@ const mod = (n: number, m: number) => ((n % m) + m) % m;
  */
 export function step(surface: SurfaceId, w: number, h: number, x: number, y: number, dir: Dir): Step | null {
   const s = SURFACES[surface];
+  if (s.sides === "adjacent") return stepSphere(w, x, y, dir);
   let nx = x + DX[dir];
   let ny = y + DY[dir];
   let wrapped = false;
@@ -135,6 +159,21 @@ export function step(surface: SurfaceId, w: number, h: number, x: number, y: num
 }
 
 /**
+ * Sphère (plateau carré, côté n) : sortir par le haut en colonne x fait entrer par la gauche en
+ * ligne x, en marchant vers la droite ; sortir par le bas fait entrer par la droite, vers la gauche.
+ * Et réciproquement.
+ */
+function stepSphere(n: number, x: number, y: number, dir: Dir): Step {
+  const nx = x + DX[dir];
+  const ny = y + DY[dir];
+  if (ny < 0) return { x: 0, y: x, wrapped: true, twisted: true, dir: 1 };
+  if (nx < 0) return { x: y, y: 0, wrapped: true, twisted: true, dir: 2 };
+  if (ny >= n) return { x: n - 1, y: x, wrapped: true, twisted: true, dir: 3 };
+  if (nx >= n) return { x: y, y: n - 1, wrapped: true, twisted: true, dir: 0 };
+  return { x: nx, y: ny, wrapped: false, twisted: false };
+}
+
+/**
  * Case du plateau qui apparaît en (gx, gy) hors du carré, pour dessiner les marges : ce que le
  * joueur verrait en regardant par-dessus un bord. Null dans les coins (deux recollements à la fois)
  * et derrière un mur.
@@ -144,6 +183,14 @@ export function ghostCell(surface: SurfaceId, w: number, h: number, gx: number, 
   const outX = gx < 0 || gx >= w;
   const outY = gy < 0 || gy >= h;
   if (outX && outY) return null;
+  if (s.sides === "adjacent") {
+    // Ce qu'on verrait en continuant tout droit à travers le bord : la bande voisine, tournée.
+    if (gy < 0) return { x: -gy - 1, y: gx };
+    if (gx < 0) return { x: gy, y: -gx - 1 };
+    if (gy >= h) return { x: w - 1 - (gy - h), y: gx };
+    if (gx >= w) return { x: gy, y: h - 1 - (gx - w) };
+    return { x: gx, y: gy };
+  }
   if (outX) {
     if (s.sides === "mur") return null;
     return { x: mod(gx, w), y: s.sides === "retourne" ? h - 1 - gy : gy };

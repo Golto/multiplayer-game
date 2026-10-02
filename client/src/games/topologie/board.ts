@@ -179,10 +179,19 @@ export class BoardRenderer {
       g.lineTo(bx, by);
       g.stroke();
     };
-    edge(x0, x0, x0, x1, info.sides === "mur" ? p.danger : p.sides);
-    edge(x1, x0, x1, x1, info.sides === "mur" ? p.danger : p.sides);
-    edge(x0, x0, x1, x0, info.ends === "mur" ? p.danger : p.ends);
-    edge(x0, x1, x1, x1, info.ends === "mur" ? p.danger : p.ends);
+    const sphere = info.sides === "adjacent";
+    if (sphere) {
+      // Haut et gauche se recollent (couleur des côtés), bas et droite aussi (couleur des bouts).
+      edge(x0, x0, x0, x1, p.sides);
+      edge(x0, x0, x1, x0, p.sides);
+      edge(x1, x0, x1, x1, p.ends);
+      edge(x0, x1, x1, x1, p.ends);
+    } else {
+      edge(x0, x0, x0, x1, info.sides === "mur" ? p.danger : p.sides);
+      edge(x1, x0, x1, x1, info.sides === "mur" ? p.danger : p.sides);
+      edge(x0, x0, x1, x0, info.ends === "mur" ? p.danger : p.ends);
+      edge(x0, x1, x1, x1, info.ends === "mur" ? p.danger : p.ends);
+    }
 
     const chevrons = (x: number, y: number, angle: number, color: string, double: boolean) => {
       g.save();
@@ -206,6 +215,16 @@ export class BoardRenderer {
     const up = Math.PI;
     const right = -Math.PI / 2;
     const left = Math.PI / 2;
+    if (sphere) {
+      // Notation a a⁻¹ : les flèches partent du coin commun de chaque paire de bords.
+      for (const t of [mid - n * c * 0.25, mid + n * c * 0.25]) {
+        chevrons(t, x0, right, p.sides, false);
+        chevrons(x0, t, down, p.sides, false);
+        chevrons(t, x1, right, p.ends, true);
+        chevrons(x1, t, down, p.ends, true);
+      }
+      return;
+    }
     if (info.sides !== "mur") {
       for (const y of [mid - n * c * 0.25, mid + n * c * 0.25]) {
         chevrons(x0, y, down, p.sides, false);

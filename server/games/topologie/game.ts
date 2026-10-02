@@ -415,6 +415,8 @@ export class TopoGame implements GameRoom {
       if (!m.to || !h.alive) continue;
       h.x = m.to.x;
       h.y = m.to.y;
+      // Sur la sphère, passer un bord fait tourner : les virages en attente repartent de là.
+      if (m.to.dir !== undefined) h.dir = m.to.dir;
       if (m.to.twisted) events.push({ k: "twist", slot: h.slot });
       const i = this.index(h.x, h.y);
       if (this.owner[i] === h.slot) {

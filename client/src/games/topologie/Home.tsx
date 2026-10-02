@@ -64,7 +64,7 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
             Trace des boucles pour agrandir ton territoire, sur un plateau dont les bords se recollent. Ici, sortir à droite peut te faire rentrer
             à gauche… la tête en bas.
           </p>
-          <ul class="surface-gallery" aria-label="Les quatre surfaces">
+          <ul class="surface-gallery" aria-label="Les surfaces">
             {SURFACE_IDS.map((id, i) => (
               <li style={{ "--i": i } as never}>
                 <SurfaceDiagram surface={id} size={96} />
