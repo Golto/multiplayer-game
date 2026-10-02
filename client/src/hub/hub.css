@@ -321,3 +321,65 @@
 .footer a:hover {
   color: var(--foreground);
 }
+
+/* Hors jeu : la station à explorer. */
+.station-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  margin-top: var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background-overlay);
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.3s,
+    border-color 0.3s;
+}
+.station-box:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}
+.station-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+.station-bg {
+  fill: #0b0d0c;
+}
+.station-rib {
+  fill: none;
+  stroke: #c9b48a;
+  stroke-width: 3;
+}
+.station-lamp {
+  fill: #ffcf6b;
+}
+.station-planet {
+  fill: #d9b98a;
+}
+.station-box:hover .station-planet {
+  animation: pulse 2s ease-in-out infinite;
+}
+.station-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  justify-content: center;
+}
+.station-text .box-cta {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+}
+.station-box:hover .box-cta {
+  filter: brightness(115%);
+}
+@media (max-width: 720px) {
+  .station-box {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

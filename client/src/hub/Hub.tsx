@@ -81,6 +81,45 @@ export function Hub({ send, connecting }: { send: PlatformSend; connecting: bool
           </ul>
         </section>
 
+        <section class="hub-elsewhere" aria-labelledby="elsewhere-title">
+          <h2 id="elsewhere-title" class="h3">
+            Hors jeu
+          </h2>
+          <a class="station-box" href="/station" data-sound="nav.forward">
+            <svg class="station-cover" viewBox="0 0 320 180" aria-hidden="true">
+              <rect width="320" height="180" class="station-bg" />
+              {[0, 1, 2, 3, 4, 5].map((i) => {
+                const k = 1 - i * 0.16;
+                const w = 150 * k;
+                const h = 80 * k;
+                const c = 22 * k;
+                return (
+                  <path
+                    d={`M${160 - w} ${90 + h} L${160 - w} ${90 - h + c} L${160 - w + c} ${90 - h} L${160 + w - c} ${90 - h} L${160 + w} ${90 - h + c} L${160 + w} ${90 + h}`}
+                    class="station-rib"
+                    style={{ opacity: 1 - i * 0.13 }}
+                  />
+                );
+              })}
+              <rect x="150" y="12" width="20" height="5" class="station-lamp" />
+              <rect x="154" y="44" width="12" height="3" class="station-lamp" />
+              <rect x="156" y="62" width="8" height="2" class="station-lamp" />
+              <circle cx="160" cy="90" r="9" class="station-planet" />
+            </svg>
+            <div class="station-text">
+              <p class="eyebrow">Exploration · solo · vue subjective</p>
+              <h3 class="h4">Sébastopol</h3>
+              <p class="small muted">
+                Une station orbitale rétro-futuriste à parcourir librement : spatioport, navette, atrium sur trois niveaux, centre médical,
+                logements, salon panorama. Pas d'ennemi, pas de chrono. Au clavier et à la souris.
+              </p>
+              <span class="box-cta">
+                Entrer <Icon name="arrowRight" size={16} />
+              </span>
+            </div>
+          </a>
+        </section>
+
         <section class="hub-how" aria-labelledby="hub-how-title">
           <h2 id="hub-how-title" class="sr-only">
             Comment ça marche
