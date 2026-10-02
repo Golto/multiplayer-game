@@ -24,6 +24,26 @@ export function SurfaceDiagram({ surface, size = 120 }: { surface: SurfaceId; si
   const a = 18;
   const b = 102;
   const m = 60;
+  if (s.sides === "adjacent") {
+    // Sphère : le haut se recolle à la gauche, le bas à la droite.
+    return (
+      <svg class="surface-diagram" viewBox="0 0 120 120" width={size} height={size} role="img" aria-label={`Schéma : ${s.name}`}>
+        <rect x={a} y={a} width={b - a} height={b - a} class="diagram-fill" />
+        <Edge x1={a} y1={a} x2={b} y2={a} gluing="droit" kind="sides" />
+        <Edge x1={a} y1={a} x2={a} y2={b} gluing="droit" kind="sides" />
+        <Edge x1={a} y1={b} x2={b} y2={b} gluing="droit" kind="ends" />
+        <Edge x1={b} y1={a} x2={b} y2={b} gluing="droit" kind="ends" />
+        <g class="diagram-arrow diagram-sides">
+          <Chevron x={m} y={a} dir="right" />
+          <Chevron x={a} y={m} dir="down" />
+        </g>
+        <g class="diagram-arrow diagram-ends">
+          <Chevron x={m} y={b} dir="right" double />
+          <Chevron x={b} y={m} dir="down" double />
+        </g>
+      </svg>
+    );
+  }
   return (
     <svg class="surface-diagram" viewBox="0 0 120 120" width={size} height={size} role="img" aria-label={`Schéma : ${s.name}`}>
       <rect x={a} y={a} width={b - a} height={b - a} class="diagram-fill" />

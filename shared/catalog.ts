@@ -41,7 +41,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Topologie",
     tagline: "Conquête sur des surfaces recollées",
     pitch:
-      "Trace des boucles pour agrandir ton territoire sur un tore, un ruban de Möbius, une bouteille de Klein ou un plan projectif. Les bords se recollent, parfois en miroir : sers-t'en pour piéger les autres.",
+      "Trace des boucles pour agrandir ton territoire sur un tore, un ruban de Möbius, une bouteille de Klein, un plan projectif, un cylindre ou une sphère. Les bords se recollent, parfois en miroir : sers-t'en pour piéger les autres.",
     players: "2 à 8",
     duration: "8 min",
     tags: ["Temps réel", "Territoire", "Mathématiques"],
@@ -52,7 +52,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Puzzle",
     tagline: "À plusieurs mains, en direct",
     pitch:
-      "Choisis un dessin et un nombre de pièces, de 12 à 192, puis assemblez-le ensemble par glisser-déposer. On voit les pièces que les autres déplacent, et on peut aussi jouer seul.",
+      "Choisis un dessin, un format (paysage, panorama, portrait, carré) et de 12 à 432 pièces, puis assemblez-le ensemble par glisser-déposer. Les pièces s'emboîtent aussi hors du plateau, et on peut jouer seul.",
     players: "1 à 8",
     duration: "5 à 60 min",
     tags: ["Coopératif", "Détente", "Solo possible"],
@@ -94,4 +94,29 @@ export const CATALOG: readonly CatalogEntry[] = [
 
 export function playableGame(id: GameId): PlayableGame | undefined {
   return CATALOG.find((g): g is PlayableGame => g.status === "jouable" && g.id === id);
+}
+
+export interface PageMeta {
+  title: string;
+  description: string;
+  /** Image d'aperçu (chemin servi par le client), si le jeu en a une. */
+  image: string;
+}
+
+const SITE = "La salle de jeux";
+const SITE_LINE = "Des jeux de société à jouer à plusieurs dans le navigateur, en salon privé. Pas de compte, rien à installer.";
+
+/** Titre, description et image d'une page : la salle, un jeu, ou l'invitation dans un salon. */
+export function pageMeta(game?: GameId | null, code?: string | null): PageMeta {
+  const entry = game ? playableGame(game) : undefined;
+  if (!entry) return { title: SITE, description: SITE_LINE, image: "/og/salle.png" };
+  const image = `/og/${entry.id}.png`;
+  if (code) {
+    return {
+      title: `${entry.name} · salon ${code}`,
+      description: `Une partie de ${entry.name} t'attend (${entry.players} joueurs). ${entry.pitch}`,
+      image,
+    };
+  }
+  return { title: `${entry.name} · ${SITE}`, description: `${entry.tagline}. ${entry.pitch}`, image };
 }

@@ -196,3 +196,39 @@ describe("manches", () => {
     expect(() => game.handle(a.id, { t: "nope" })).toThrow(GameError);
   });
 });
+
+describe("sphère et cylindre", () => {
+  const n = 10;
+  const back = (d: Dir) => ((d + 2) % 4) as Dir;
+
+  it("sur la sphère, traverser un bord puis faire demi-tour ramène au point de départ", () => {
+    const starts: [number, number, Dir][] = [
+      [3, 0, 0],
+      [0, 7, 3],
+      [6, n - 1, 2],
+      [n - 1, 2, 1],
+    ];
+    for (const [x, y, d] of starts) {
+      const there = step("sphere", n, n, x, y, d)!;
+      expect(there.wrapped).toBe(true);
+      expect(there.dir).toBeDefined();
+      const home = step("sphere", n, n, there.x, there.y, back(there.dir!))!;
+      expect([home.x, home.y]).toEqual([x, y]);
+      expect(home.dir).toBe(back(d));
+    }
+  });
+
+  it("les marges de la sphère montrent la case où l'on arrive", () => {
+    for (let k = 0; k < n; k++) {
+      expect(ghostCell("sphere", n, n, k, -1)).toEqual({ x: step("sphere", n, n, k, 0, 0)!.x, y: step("sphere", n, n, k, 0, 0)!.y });
+      expect(ghostCell("sphere", n, n, -1, k)).toEqual({ x: step("sphere", n, n, 0, k, 3)!.x, y: step("sphere", n, n, 0, k, 3)!.y });
+      expect(ghostCell("sphere", n, n, k, n)).toEqual({ x: step("sphere", n, n, k, n - 1, 2)!.x, y: step("sphere", n, n, k, n - 1, 2)!.y });
+      expect(ghostCell("sphere", n, n, n, k)).toEqual({ x: step("sphere", n, n, n - 1, k, 1)!.x, y: step("sphere", n, n, n - 1, k, 1)!.y });
+    }
+  });
+
+  it("le cylindre se recolle à gauche et à droite, et s'arrête en haut et en bas", () => {
+    expect(step("cylindre", n, n, n - 1, 4, 1)).toMatchObject({ x: 0, y: 4, wrapped: true, twisted: false });
+    expect(step("cylindre", n, n, 4, 0, 0)).toBeNull();
+  });
+});

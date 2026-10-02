@@ -1,6 +1,6 @@
 // Point d'entrée du Puzzle pour la plateforme.
 
-import { ARTS, PIECE_COUNTS, RULES, grid, type PuzzleAction, type PuzzleView } from "../../../../shared/games/puzzle";
+import { ARTS, FORMATS, PIECE_COUNTS, RULES, layout, type PuzzleAction, type PuzzleView } from "../../../../shared/games/puzzle";
 import { RoomLobby } from "../../ui/RoomLobby";
 import type { GameClient, RoomProps } from "../types";
 import { ArtThumb } from "./arts";
@@ -10,19 +10,19 @@ import "./puzzle.css";
 
 function Config({ view, send }: { view: PuzzleView; send: (a: PuzzleAction) => void }) {
   const host = view.players.find((p) => p.id === view.you)?.isHost;
-  const { art, count } = view.config;
-  const g = grid(count);
+  const { art, count, format } = view.config;
+  const L = layout(view.config);
   return (
     <div class="puzzle-config">
       <h2 class="h5">Le puzzle</h2>
-      <div class="config-preview">
-        <ArtThumb art={art} uid="config-preview" class="art-thumb" />
-        <svg class="config-grid" viewBox="0 0 1200 900" aria-hidden="true">
-          {Array.from({ length: g.cols - 1 }, (_, i) => (
-            <line x1={(i + 1) * g.cw} y1="0" x2={(i + 1) * g.cw} y2="900" />
+      <div class="config-preview" style={{ aspectRatio: `${L.w} / ${L.h}`, width: `min(100%, ${Math.round((260 * L.w) / L.h)}px)` }}>
+        <ArtThumb art={art} uid="config-preview" class="art-thumb" w={L.w} h={L.h} />
+        <svg class="config-grid" viewBox={`0 0 ${L.w} ${L.h}`} aria-hidden="true">
+          {Array.from({ length: L.cols - 1 }, (_, i) => (
+            <line x1={(i + 1) * L.cw} y1="0" x2={(i + 1) * L.cw} y2={L.h} />
           ))}
-          {Array.from({ length: g.rows - 1 }, (_, i) => (
-            <line x1="0" y1={(i + 1) * g.ch} x2="1200" y2={(i + 1) * g.ch} />
+          {Array.from({ length: L.rows - 1 }, (_, i) => (
+            <line x1="0" y1={(i + 1) * L.ch} x2={L.w} y2={(i + 1) * L.ch} />
           ))}
         </svg>
       </div>
@@ -44,22 +44,41 @@ function Config({ view, send }: { view: PuzzleView; send: (a: PuzzleAction) => v
         </div>
       </fieldset>
       <fieldset class="chip-group" disabled={!host}>
-        <legend class="field-label">Nombre de pièces</legend>
-        {PIECE_COUNTS.map((n) => (
+        <legend class="field-label">Format</legend>
+        {FORMATS.map((f) => (
           <button
             type="button"
-            class={`chip mono ${n === count ? "is-active" : ""}`}
-            aria-pressed={n === count}
+            class={`chip format-chip ${f.id === format ? "is-active" : ""}`}
+            aria-pressed={f.id === format}
             data-sound="chip.select"
-            onClick={() => send({ t: "configure", config: { count: n } })}
+            onClick={() => send({ t: "configure", config: { format: f.id } })}
           >
-            {n}
+            <span class="format-shape" style={{ aspectRatio: `${f.w} / ${f.h}` }} aria-hidden="true" />
+            {f.name}
           </button>
         ))}
       </fieldset>
+      <fieldset class="chip-group" disabled={!host}>
+        <legend class="field-label">Nombre de pièces</legend>
+        {PIECE_COUNTS.map((n) => {
+          const g = layout({ count: n, format });
+          return (
+            <button
+              type="button"
+              class={`chip mono ${n === count ? "is-active" : ""} ${n > 200 ? "is-xl" : ""}`}
+              aria-pressed={n === count}
+              data-sound="chip.select"
+              title={`${g.cols} × ${g.rows}`}
+              onClick={() => send({ t: "configure", config: { count: n } })}
+            >
+              {g.cols * g.rows}
+            </button>
+          );
+        })}
+      </fieldset>
       <p class="muted small">
-        {host ? "Tu choisis, tout le monde assemble." : "L'hôte choisit le dessin et le nombre de pièces."} On peut rejoindre un puzzle en
-        cours.
+        {host ? "Tu choisis, tout le monde assemble." : "L'hôte choisit le dessin, le format et le nombre de pièces."} Une pièce ne se
+        valide sur le plateau que si elle touche le reste du puzzle (ou si c'est un coin) ; hors du plateau, deux voisines s'emboîtent.
       </p>
     </div>
   );

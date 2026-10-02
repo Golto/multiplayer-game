@@ -1,9 +1,11 @@
-import { ARTS, PIECE_COUNTS, piecePath } from "../../../../shared/games/puzzle";
+import { ARTS, PIECE_COUNTS, layout, piecePath } from "../../../../shared/games/puzzle";
 import { Watermark } from "../../ui/art";
 import { Brand, Link, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { EntryPanel } from "../../ui/EntryPanel";
 import type { HomeProps } from "../types";
 import { ART_COMPONENTS, ArtThumb } from "./arts";
+
+const COVER_LAYOUT = layout({ count: 24, format: "paysage" });
 
 /** Couverture de la boîte : le dessin découpé, trois pièces sorties du lot. */
 export function Cover() {
@@ -17,7 +19,7 @@ export function Cover() {
         </g>
         {Array.from({ length: 24 }, (_, id) => (
           <clipPath id={`cover-c${id}`}>
-            <path d={piecePath(id, 24, 7)} />
+            <path d={piecePath(id, COVER_LAYOUT, 7)} />
           </clipPath>
         ))}
       </defs>
@@ -26,14 +28,14 @@ export function Cover() {
         lifted.includes(id) ? null : (
           <g>
             <use href="#cover-art" clip-path={`url(#cover-c${id})`} />
-            <path d={piecePath(id, 24, 7)} class="cover-edge" />
+            <path d={piecePath(id, COVER_LAYOUT, 7)} class="cover-edge" />
           </g>
         ),
       )}
       {lifted.map((id, i) => (
         <g class="cover-lifted" style={{ "--i": i } as never} transform={`translate(${[-60, 80, 30][i]} ${[60, -40, 90][i]}) rotate(${[-8, 6, -4][i]} 600 450)`}>
           <use href="#cover-art" clip-path={`url(#cover-c${id})`} />
-          <path d={piecePath(id, 24, 7)} class="cover-edge cover-edge-lifted" />
+          <path d={piecePath(id, COVER_LAYOUT, 7)} class="cover-edge cover-edge-lifted" />
         </g>
       ))}
     </svg>
@@ -70,7 +72,7 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
           </h1>
           <p class="hero-lead">
             Un dessin, des pièces éparpillées sur la table, et autant de mains que vous voulez. Chacun voit les pièces que les autres
-            déplacent, en direct.
+            déplacent, en direct. Comme pour un vrai puzzle, on commence par les coins, et on peut assembler des morceaux à côté du plateau.
           </p>
           <ul class="art-gallery" aria-label="Les dessins">
             {ARTS.map((a, i) => (

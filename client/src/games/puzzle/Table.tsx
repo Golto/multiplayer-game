@@ -1,22 +1,18 @@
-// La table : le plateau au centre, les pièces autour. Glisser-déposer à la souris ou au doigt,
-// zoom à la molette ou aux boutons, déplacement de la vue en tirant le fond de la table.
+// La table : le plateau au centre, les pièces autour. Glisser-déposer à la souris ou au doigt (un
+// bloc de pièces emboîtées se déplace d'un seul geste), zoom à la molette ou aux boutons,
+// déplacement de la vue en tirant le fond de la table.
 // Les déplacements (les siens comme ceux des autres) modifient directement le DOM : seuls les
 // changements de structure (prise, pose, ordre) passent par un nouveau rendu.
 
 import { useEffect, useMemo, useReducer, useRef, useState } from "preact/hooks";
 import {
   ARTS,
-  BOARD_X,
-  BOARD_Y,
-  PUZZLE_H,
-  PUZZLE_W,
-  RULES,
-  TABLE_H,
-  TABLE_W,
-  grid,
-  home,
+  cuts,
   isEdge,
+  layout,
+  members,
   piecePath,
+  resolveDrop,
   type PieceState,
   type PuzzleAction,
   type PuzzleEvent,
@@ -26,7 +22,7 @@ import { PlayerSeal, accentVar } from "../../ui/art";
 import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { Icon } from "../../ui/icons";
 import { play } from "../../sound/engine";
-import { ART_COMPONENTS } from "./arts";
+import { FramedArt } from "./arts";
 
 interface Props {
   view: PuzzleView;
@@ -42,81 +38,100 @@ interface Box {
   h: number;
 }
 
-const FULL: Box = { x: 0, y: 0, w: TABLE_W, h: TABLE_H };
-
 function elapsed(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
 export function Table({ view, send, subscribe, onLeave }: Props) {
-  const { count } = view.config;
-  const g = grid(count);
+  const L = useMemo(() => layout(view.config), [view.config.count, view.config.format]);
+  const FULL: Box = { x: 0, y: 0, w: L.tableW, h: L.tableH };
   const uid = `art-${view.seed}`;
-  const Art = ART_COMPONENTS[view.config.art];
   const me = view.players.find((p) => p.id === view.you);
   const mySlot = me?.slot ?? 0;
   const bySlot = useMemo(() => new Map(view.players.map((p) => [p.slot, p])), [view.players]);
 
-  // État local des pièces, recalé à chaque état complet du serveur.
-  const pieces = useRef(new Map<number, PieceState>());
+  // État local des pièces (indexées par identifiant), recalé à chaque état complet du serveur.
+  const pieces = useRef<PieceState[]>([]);
   const order = useRef<number[]>([]);
   const nodes = useRef(new Map<number, SVGGElement>());
   const [, rerender] = useReducer((n: number) => n + 1, 0);
-  const held = useRef<{ id: number; dx: number; dy: number; lastSent: number } | null>(null);
+  /** Le bloc qu'on tient : la pièce saisie, et le décalage de chaque autre pièce du bloc. */
+  const held = useRef<{ id: number; dx: number; dy: number; block: { id: number; ox: number; oy: number }[]; lastSent: number } | null>(null);
 
   useEffect(() => {
-    const map = new Map(view.pieces.map((p) => [p.id, { ...p }]));
-    // Ne pas écraser la pièce qu'on est en train de déplacer.
+    const next = view.pieces.map((p) => ({ ...p }));
+    // Ne pas écraser le bloc qu'on est en train de déplacer.
     const h = held.current;
-    if (h && pieces.current.has(h.id)) map.set(h.id, pieces.current.get(h.id)!);
-    pieces.current = map;
+    if (h) for (const b of h.block) if (pieces.current[b.id]) next[b.id] = pieces.current[b.id]!;
+    pieces.current = next;
     if (order.current.length !== view.pieces.length) order.current = view.pieces.map((p) => p.id);
     rerender(0);
   }, [view]);
 
-  const paths = useMemo(() => Array.from({ length: g.cols * g.rows }, (_, id) => piecePath(id, count, view.seed)), [count, view.seed]);
+  const paths = useMemo(() => {
+    const cut = cuts(view.seed, L.cols, L.rows);
+    return Array.from({ length: L.cols * L.rows }, (_, id) => piecePath(id, L, view.seed, cut));
+  }, [L, view.seed]);
 
   const place = (id: number) => {
-    const p = pieces.current.get(id);
+    const p = pieces.current[id];
     const node = nodes.current.get(id);
     if (!p || !node) return;
-    const c = id % g.cols;
-    const r = Math.floor(id / g.cols);
-    node.setAttribute("transform", `translate(${p.x - c * g.cw} ${p.y - r * g.ch})`);
+    const c = id % L.cols;
+    const r = Math.floor(id / L.cols);
+    node.setAttribute("transform", `translate(${p.x - c * L.cw} ${p.y - r * L.ch})`);
   };
 
-  const toFront = (id: number) => {
-    order.current = [...order.current.filter((x) => x !== id), id];
+  const toFront = (ids: number[]) => {
+    const set = new Set(ids);
+    order.current = [...order.current.filter((x) => !set.has(x)), ...ids];
   };
+
+  const heldIds = () => new Set(held.current?.block.map((b) => b.id) ?? []);
 
   // Événements des autres joueurs (et confirmations du serveur).
   useEffect(
     () =>
       subscribe((event) => {
         const e = event as PuzzleEvent;
-        const p = pieces.current.get(e.id);
-        if (!p) return;
         if (e.k === "grab") {
-          p.heldBy = e.slot;
+          const p = pieces.current[e.id];
+          if (!p) return;
+          const block = members(pieces.current, p.group);
+          for (const q of block) q.heldBy = e.slot;
           if (e.slot !== mySlot) {
-            toFront(e.id);
+            toFront(block.map((q) => q.id));
             rerender(0);
           }
         } else if (e.k === "move") {
-          if (held.current?.id === e.id) return;
-          p.x = e.x;
-          p.y = e.y;
-          place(e.id);
+          if (heldIds().has(e.id)) return;
+          const p = pieces.current[e.id];
+          if (!p) return;
+          const dx = e.x - p.x;
+          const dy = e.y - p.y;
+          for (const q of members(pieces.current, p.group)) {
+            q.x += dx;
+            q.y += dy;
+            place(q.id);
+          }
         } else if (e.k === "drop") {
-          const wasMine = held.current?.id === e.id;
-          if (wasMine && e.slot === mySlot) return;
-          if (wasMine) held.current = null;
-          const newlyPlaced = e.placed && !p.placed;
-          Object.assign(p, { x: e.x, y: e.y, placed: e.placed, heldBy: 0 });
-          if (newlyPlaced && e.slot !== mySlot) play("chip.select", { gain: 0.6 });
+          const mine = heldIds();
+          // Le bloc qu'on tient en ce moment reste sous notre main.
+          if (e.pieces.some((q) => mine.has(q.id))) {
+            if (e.slot === mySlot) return;
+            held.current = null;
+          }
+          const newlyPlaced = e.pieces.some((q) => q.placed && !pieces.current[q.id]?.placed);
+          for (const q of e.pieces) {
+            pieces.current[q.id] = { ...q };
+            place(q.id);
+          }
+          if (e.slot !== mySlot) {
+            if (newlyPlaced) play("chip.select", { gain: 0.6 });
+            else if (e.merged) play("card.hover", { gain: 0.5 });
+          }
           rerender(0);
-          place(e.id);
         }
       }),
     [subscribe, mySlot],
@@ -126,6 +141,8 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [box, setBox] = useState<Box>(FULL);
+  // Nouveau format ou nouvelle taille : on revoit toute la table.
+  useEffect(() => setBox(FULL), [L]);
   const pan = useRef<{ x: number; y: number; box: Box } | null>(null);
 
   const toTable = (e: { clientX: number; clientY: number }) => {
@@ -137,8 +154,8 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
   };
 
   const zoom = (factor: number, cx = box.x + box.w / 2, cy = box.y + box.h / 2) => {
-    const w = Math.min(TABLE_W * 1.2, Math.max(TABLE_W / 6, box.w * factor));
-    const h = (w * TABLE_H) / TABLE_W;
+    const w = Math.min(L.tableW * 1.2, Math.max(L.tableW / 8, box.w * factor));
+    const h = (w * L.tableH) / L.tableW;
     setBox({ x: cx - ((cx - box.x) * w) / box.w, y: cy - ((cy - box.y) * h) / box.h, w, h });
   };
 
@@ -151,15 +168,17 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
   // ------------------------------------------------------------ glisser-déposer
 
   const onPiecePointerDown = (e: PointerEvent, id: number) => {
-    const p = pieces.current.get(id);
-    if (!p || p.placed || (p.heldBy && p.heldBy !== mySlot) || view.phase !== "playing") return;
+    const p = pieces.current[id];
+    if (!p || p.placed || view.phase !== "playing") return;
+    const block = members(pieces.current, p.group);
+    if (block.some((q) => q.heldBy && q.heldBy !== mySlot)) return;
     e.stopPropagation();
     e.preventDefault();
     svgRef.current?.setPointerCapture(e.pointerId);
     const pt = toTable(e);
-    held.current = { id, dx: pt.x - p.x, dy: pt.y - p.y, lastSent: 0 };
-    p.heldBy = mySlot;
-    toFront(id);
+    held.current = { id, dx: pt.x - p.x, dy: pt.y - p.y, block: block.map((q) => ({ id: q.id, ox: q.x - p.x, oy: q.y - p.y })), lastSent: 0 };
+    for (const q of block) q.heldBy = mySlot;
+    toFront(block.map((q) => q.id));
     send({ t: "grab", id });
     play("card.hover");
     rerender(0);
@@ -174,15 +193,19 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
   const onPointerMove = (e: PointerEvent) => {
     const h = held.current;
     if (h) {
-      const p = pieces.current.get(h.id)!;
       const pt = toTable(e);
-      p.x = pt.x - h.dx;
-      p.y = pt.y - h.dy;
-      place(h.id);
+      const x = pt.x - h.dx;
+      const y = pt.y - h.dy;
+      for (const b of h.block) {
+        const q = pieces.current[b.id]!;
+        q.x = x + b.ox;
+        q.y = y + b.oy;
+        place(b.id);
+      }
       const now = performance.now();
       if (now - h.lastSent > 40) {
         h.lastSent = now;
-        send({ t: "move", id: h.id, x: p.x, y: p.y });
+        send({ t: "move", id: h.id, x, y });
       }
       return;
     }
@@ -200,21 +223,15 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
     const h = held.current;
     if (!h) return;
     held.current = null;
-    const p = pieces.current.get(h.id)!;
-    // Aimantation immédiate à l'écran ; le serveur confirme.
-    const target = home(h.id, count);
-    const near = Math.hypot(p.x - target.x, p.y - target.y) <= Math.min(g.cw, g.ch) * RULES.snap;
+    const p = pieces.current[h.id]!;
     send({ t: "drop", id: h.id, x: p.x, y: p.y });
-    p.heldBy = 0;
-    if (near) {
-      p.x = target.x;
-      p.y = target.y;
-      p.placed = true;
-      play("checkbox.check");
-    } else {
-      play("drag.drop", { gain: 0.6 });
-    }
-    place(h.id);
+    for (const b of h.block) pieces.current[b.id]!.heldBy = 0;
+    // Même règle que le serveur, appliquée tout de suite à l'écran ; le serveur confirme.
+    const result = resolveDrop(pieces.current, L, h.id);
+    for (const q of result.changed) place(q.id);
+    if (result.placed) play("checkbox.check");
+    else if (result.merged) play("drag.drop", { gain: 1 });
+    else play("drag.drop", { gain: 0.5 });
     rerender(0);
   };
 
@@ -228,13 +245,13 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
     return () => clearInterval(t);
   }, []);
   const offset = useMemo(() => view.serverNow - Date.now(), [view]);
-  const total = g.cols * g.rows;
-  const placed = [...pieces.current.values()].filter((p) => p.placed).length;
+  const total = L.cols * L.rows;
+  const placed = pieces.current.filter((p) => p.placed).length;
   const time = view.startedAt ? (view.finishedAt ?? now + offset) - view.startedAt : 0;
 
   // Rangement : pièces posées dessous, puis les autres dans l'ordre de prise.
-  const ids = order.current.filter((id) => pieces.current.has(id));
-  const layered = [...ids.filter((id) => pieces.current.get(id)!.placed), ...ids.filter((id) => !pieces.current.get(id)!.placed)];
+  const ids = order.current.filter((id) => pieces.current[id]);
+  const layered = [...ids.filter((id) => pieces.current[id]!.placed), ...ids.filter((id) => !pieces.current[id]!.placed)];
 
   return (
     <div class="page puzzle-page">
@@ -291,7 +308,7 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
         >
           <defs>
             <g id={uid}>
-              <Art uid={uid} />
+              <FramedArt art={view.config.art} uid={uid} w={L.w} h={L.h} />
             </g>
             {paths.map((d, id) => (
               <clipPath id={`${uid}-c${id}`}>
@@ -302,26 +319,26 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
               <feDropShadow dx="6" dy="10" stdDeviation="8" flood-opacity="0.35" />
             </filter>
           </defs>
-          <rect x="-2000" y="-2000" width={TABLE_W + 4000} height={TABLE_H + 4000} class="table-cloth" />
-          <rect x={BOARD_X - 14} y={BOARD_Y - 14} width={PUZZLE_W + 28} height={PUZZLE_H + 28} rx="10" class="board-frame" />
-          <rect x={BOARD_X} y={BOARD_Y} width={PUZZLE_W} height={PUZZLE_H} class="board" />
-          <g transform={`translate(${BOARD_X} ${BOARD_Y})`}>
-            {Array.from({ length: g.cols - 1 }, (_, i) => (
-              <line x1={(i + 1) * g.cw} y1="0" x2={(i + 1) * g.cw} y2={PUZZLE_H} class="board-grid" />
+          <rect x="-4000" y="-4000" width={L.tableW + 8000} height={L.tableH + 8000} class="table-cloth" />
+          <rect x={L.boardX - 14} y={L.boardY - 14} width={L.w + 28} height={L.h + 28} rx="10" class="board-frame" />
+          <rect x={L.boardX} y={L.boardY} width={L.w} height={L.h} class="board" />
+          <g transform={`translate(${L.boardX} ${L.boardY})`}>
+            {Array.from({ length: L.cols - 1 }, (_, i) => (
+              <line x1={(i + 1) * L.cw} y1="0" x2={(i + 1) * L.cw} y2={L.h} class="board-grid" />
             ))}
-            {Array.from({ length: g.rows - 1 }, (_, i) => (
-              <line x1="0" y1={(i + 1) * g.ch} x2={PUZZLE_W} y2={(i + 1) * g.ch} class="board-grid" />
+            {Array.from({ length: L.rows - 1 }, (_, i) => (
+              <line x1="0" y1={(i + 1) * L.ch} x2={L.w} y2={(i + 1) * L.ch} class="board-grid" />
             ))}
             {ghost && <use href={`#${uid}`} opacity="0.18" />}
           </g>
 
           {layered.map((id) => {
-            const p = pieces.current.get(id)!;
-            const c = id % g.cols;
-            const r = Math.floor(id / g.cols);
+            const p = pieces.current[id]!;
+            const c = id % L.cols;
+            const r = Math.floor(id / L.cols);
             const holder = p.heldBy ? bySlot.get(p.heldBy) : undefined;
-            const mine = p.heldBy === mySlot && held.current?.id === id;
-            const dim = edgesOnly && !p.placed && !isEdge(id, count);
+            const mine = p.heldBy === mySlot && !!held.current;
+            const dim = edgesOnly && !p.placed && !isEdge(id, L);
             return (
               <g
                 key={id}
@@ -331,15 +348,15 @@ export function Table({ view, send, subscribe, onLeave }: Props) {
                   else nodes.current.delete(id);
                 }}
                 class={`piece ${p.placed ? "is-placed" : ""} ${mine ? "is-mine" : ""} ${holder && !mine ? "is-held" : ""} ${dim ? "is-dim" : ""}`}
-                transform={`translate(${p.x - c * g.cw} ${p.y - r * g.ch})`}
+                transform={`translate(${p.x - c * L.cw} ${p.y - r * L.ch})`}
                 onPointerDown={(e) => onPiecePointerDown(e, id)}
                 style={holder ? accentVar(holder.accent) : undefined}
                 filter={mine ? `url(#${uid}-lift)` : undefined}
               >
                 <use href={`#${uid}`} clip-path={`url(#${uid}-c${id})`} />
                 <path d={paths[id]} class="piece-edge" />
-                {holder && !mine && (
-                  <text x={c * g.cw + g.cw / 2} y={r * g.ch - 10} class="piece-holder" text-anchor="middle">
+                {holder && !mine && p.id === p.group && (
+                  <text x={c * L.cw + L.cw / 2} y={r * L.ch - 10} class="piece-holder" text-anchor="middle">
                     {holder.name}
                   </text>
                 )}
@@ -390,7 +407,8 @@ function Done({ view, send, time }: { view: PuzzleView; send: (a: PuzzleAction) 
     const t = setTimeout(() => play("system.ready"), 1200);
     return () => clearTimeout(t);
   }, []);
-  const total = grid(view.config.count).cols * grid(view.config.count).rows;
+  const L = layout(view.config);
+  const total = L.cols * L.rows;
   const ranking = [...view.players].sort((a, b) => b.placed - a.placed);
   return (
     <div class="puzzle-done" role="dialog" aria-modal="true" aria-labelledby="done-title">
