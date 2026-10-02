@@ -2,8 +2,9 @@ import { useEffect, useState } from "preact/hooks";
 import { RULES, describeRumor, formatSigned, type GameView } from "../../../shared/protocol";
 import { Card, CommodityGlyph, PlayerSeal, Watermark, accentVar, commodityInfo } from "../art";
 import { Icon } from "../icons";
+import { play } from "../sound/engine";
 import type { Send } from "../main";
-import { Brand, ThemeToggle } from "./common";
+import { Brand, SoundToggle, ThemeToggle } from "./common";
 import { Dispatch, serialOf, usePlayers } from "./Game";
 
 const AWARD_GLYPH: Record<string, string> = {
@@ -18,8 +19,10 @@ export function FinalScreen({ view, send, onLeave }: { view: GameView; send: Sen
   const playerOf = usePlayers(view);
   const [shown, setShown] = useState(false);
   useEffect(() => {
-    const id = setTimeout(() => setShown(true), 400);
-    return () => clearTimeout(id);
+    const ids = [setTimeout(() => setShown(true), 400)];
+    // Une cascade de retournements, une marchandise après l'autre.
+    for (let row = 0; row < 4; row++) ids.push(setTimeout(() => play("carousel.next", { pitch: row * 2 }), 700 + row * 450));
+    return () => ids.forEach(clearTimeout);
   }, []);
 
   const final = view.final;
@@ -35,8 +38,9 @@ export function FinalScreen({ view, send, onLeave }: { view: GameView; send: Sen
       <header class="topbar">
         <Brand />
         <div class="topbar-actions">
+          <SoundToggle />
           <ThemeToggle />
-          <button class="btn btn-ghost" type="button" onClick={onLeave}>
+          <button class="btn btn-ghost" type="button" data-sound="nav.back" onClick={onLeave}>
             <Icon name="arrowLeft" size={16} /> Quitter
           </button>
         </div>
@@ -193,7 +197,7 @@ export function FinalScreen({ view, send, onLeave }: { view: GameView; send: Sen
 
         <div class="final-actions">
           {me?.isHost ? (
-            <button class="btn btn-primary btn-lg" type="button" onClick={() => send({ t: "rematch" })}>
+            <button class="btn btn-primary btn-lg" type="button" data-sound="refresh.release" onClick={() => send({ t: "rematch" })}>
               Revanche, même table
               <Icon name="arrowRight" size={20} />
             </button>

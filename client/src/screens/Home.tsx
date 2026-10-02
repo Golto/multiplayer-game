@@ -3,7 +3,7 @@ import { CODE_LENGTH, COMMODITIES, RULES } from "../../../shared/protocol";
 import { Card, Watermark } from "../art";
 import { Icon } from "../icons";
 import type { Send } from "../main";
-import { Brand, ThemeToggle } from "./common";
+import { Brand, SoundToggle, ThemeToggle } from "./common";
 
 const NAME_KEY = "rumeurs.name";
 
@@ -51,7 +51,10 @@ export function Home({ send, initialCode, connecting }: { send: Send; initialCod
       <Watermark />
       <header class="topbar">
         <Brand />
-        <ThemeToggle />
+        <div class="topbar-actions">
+          <SoundToggle />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main class="home-grid">

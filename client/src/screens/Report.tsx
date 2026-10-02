@@ -2,6 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { COMMODITY_IDS, RULES, describeRumor, formatSigned, type GameView, type PublicPlayer } from "../../../shared/protocol";
 import { Card, CommodityGlyph, PlayerSeal, accentVar, commodityInfo } from "../art";
 import { Icon } from "../icons";
+import { play } from "../sound/engine";
 import type { Send } from "../main";
 import { Dispatch, serialOf } from "./Game";
 
@@ -17,9 +18,25 @@ export function ReportOverlay({ view, send, playerOf, onClose }: Props) {
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
     setFlipped(false);
-    const id = setTimeout(() => setFlipped(true), 1400);
+    const id = setTimeout(() => {
+      setFlipped(true);
+      play("carousel.next");
+    }, 1400);
     return () => clearTimeout(id);
   }, [report?.round]);
+
+  // Le tampon tombe sur les rumeurs vérifiées par cette carte.
+  const verdicts = report?.reveal
+    ? view.rumors
+        .filter((r) => r.author === report.reveal!.owner && r.input.kind === "card" && r.input.commodity === report.reveal!.commodity && r.verdict)
+        .map((r) => r.verdict)
+    : [];
+  const verdictKey = verdicts.join(",");
+  useEffect(() => {
+    if (!flipped || verdicts.length === 0) return;
+    const id = setTimeout(() => play(verdicts.includes("false") ? "feedback.error" : "feedback.success"), 650);
+    return () => clearTimeout(id);
+  }, [flipped, verdictKey]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -50,7 +67,7 @@ export function ReportOverlay({ view, send, playerOf, onClose }: Props) {
               Séance {report.round + 1}
             </h2>
           </div>
-          <button class="btn btn-ghost btn-icon" type="button" onClick={onClose} aria-label="Voir le plateau">
+          <button class="btn btn-ghost btn-icon" type="button" data-sound="modal.close" onClick={onClose} aria-label="Voir le plateau">
             <Icon name="xmark" size={20} />
           </button>
         </header>

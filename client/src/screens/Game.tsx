@@ -16,8 +16,9 @@ import {
 } from "../../../shared/protocol";
 import { Card, CommodityGlyph, PlayerSeal, Sparkline, accentVar, commodityInfo } from "../art";
 import { Icon } from "../icons";
+import { play } from "../sound/engine";
 import type { Send } from "../main";
-import { Brand, ThemeToggle } from "./common";
+import { Brand, SoundToggle, ThemeToggle } from "./common";
 import { ReportOverlay } from "./Report";
 
 interface Props {
@@ -59,6 +60,12 @@ export function GameScreen({ view, send, clockOffset, onLeave }: Props) {
   const total = view.deadline ? (view.phase === "rumor" ? RULES.rumorSeconds : view.phase === "market" ? RULES.marketSeconds : RULES.reportSeconds) : 1;
   const left = view.deadline ? Math.max(0, Math.ceil((view.deadline - now) / 1000)) : 0;
 
+  // Les cinq dernières secondes battent, de plus en plus aigu.
+  useEffect(() => {
+    if (view.phase === "report" || left > 5 || left === 0 || me?.done) return;
+    play("slider.tick", { pitch: (5 - left) * 2 });
+  }, [left]);
+
   return (
     <div class={`page game phase-${view.phase}`}>
       <header class="game-header">
@@ -81,10 +88,12 @@ export function GameScreen({ view, send, clockOffset, onLeave }: Props) {
           <span class="pill mono" title="Code du salon">
             {view.code}
           </span>
+          <SoundToggle />
           <ThemeToggle />
           <button
             class="btn btn-ghost btn-icon"
             type="button"
+            data-sound="nav.back"
             onClick={() => {
               if (confirm("Quitter la partie ? Tu pourras revenir avec le même lien tant que la partie dure.")) onLeave();
             }}
@@ -116,7 +125,7 @@ export function GameScreen({ view, send, clockOffset, onLeave }: Props) {
               <div class="report-mini">
                 <h2 class="h5">Clôture de la séance {view.round + 1}</h2>
                 <p class="muted small">Les ordres sont passés et une carte vient d'être retournée.</p>
-                <button class="btn btn-outline btn-block" type="button" onClick={() => setShowReport(true)}>
+                <button class="btn btn-outline btn-block" type="button" data-sound="modal.open" onClick={() => setShowReport(true)}>
                   <Icon name="eye" size={16} /> Revoir la clôture
                 </button>
               </div>
@@ -362,7 +371,7 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
           {waiting > 0 ? `En attente de ${waiting} joueur${waiting > 1 ? "s" : ""}…` : "Tout le monde a parlé."} Elle sera publiée quand tout
           le monde aura parlé.
         </p>
-        <button class="btn btn-ghost btn-block" type="button" onClick={() => setEditing(true)}>
+        <button class="btn btn-ghost btn-block" type="button" data-sound="press.abort" onClick={() => setEditing(true)}>
           <Icon name="arrowLeft" size={16} /> Changer d'avis
         </button>
       </div>
@@ -393,7 +402,7 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
             ["silence", "Me taire"],
           ] as const
         ).map(([id, label]) => (
-          <button type="button" role="tab" aria-selected={mode === id} class={mode === id ? "is-active" : ""} onClick={() => setMode(id)}>
+          <button type="button" role="tab" data-sound="nav.tab" aria-selected={mode === id} class={mode === id ? "is-active" : ""} onClick={() => setMode(id)}>
             {label}
           </button>
         ))}
@@ -405,6 +414,7 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
           {COMMODITIES.map((c) => (
             <button
               type="button"
+              data-sound="chip.select"
               class={`chip ${commodity === c.id ? "is-active" : ""}`}
               style={accentVar(c.accent)}
               aria-pressed={commodity === c.id}
@@ -433,7 +443,7 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
                 ["eq", "exactement"],
               ] as const
             ).map(([id, label]) => (
-              <button type="button" class={`chip ${claim === id ? "is-active" : ""}`} aria-pressed={claim === id} onClick={() => setClaim(id)}>
+              <button type="button" data-sound="chip.select" class={`chip ${claim === id ? "is-active" : ""}`} aria-pressed={claim === id} onClick={() => setClaim(id)}>
                 {label}
               </button>
             ))}
@@ -450,10 +460,10 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
         <>
           <fieldset class="chip-group">
             <legend class="field-label">Le cours final sera…</legend>
-            <button type="button" class={`chip ${valueClaim === "gte" ? "is-active" : ""}`} aria-pressed={valueClaim === "gte"} onClick={() => setValueClaim("gte")}>
+            <button type="button" data-sound="chip.select" class={`chip ${valueClaim === "gte" ? "is-active" : ""}`} aria-pressed={valueClaim === "gte"} onClick={() => setValueClaim("gte")}>
               au moins
             </button>
-            <button type="button" class={`chip ${valueClaim === "lte" ? "is-active" : ""}`} aria-pressed={valueClaim === "lte"} onClick={() => setValueClaim("lte")}>
+            <button type="button" data-sound="chip.select" class={`chip ${valueClaim === "lte" ? "is-active" : ""}`} aria-pressed={valueClaim === "lte"} onClick={() => setValueClaim("lte")}>
               au plus
             </button>
           </fieldset>
@@ -483,7 +493,7 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
         </div>
       )}
 
-      <button class="btn btn-primary btn-lg btn-block" type="submit" disabled={!input}>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" data-sound="input.submit" disabled={!input}>
         {submitted ? "Remplacer ma rumeur" : "Publier la rumeur"}
         <Icon name="envelope" size={20} />
       </button>
@@ -494,11 +504,11 @@ function RumorComposer({ view, send }: { view: GameView; send: Send }) {
 function Stepper({ value, min, max, onChange, label, signed }: { value: number; min: number; max: number; onChange: (v: number) => void; label: string; signed?: boolean }) {
   return (
     <div class="stepper-input" role="group" aria-label={label}>
-      <button type="button" class="btn btn-outline btn-icon" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="Moins">
+      <button type="button" data-sound="stepper.decrement" class="btn btn-outline btn-icon" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="Moins">
         −
       </button>
       <output class="mono stepper-value">{signed ? formatSigned(value) : value}</output>
-      <button type="button" class="btn btn-outline btn-icon" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label="Plus">
+      <button type="button" data-sound="stepper.increment" class="btn btn-outline btn-icon" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label="Plus">
         +
       </button>
     </div>
@@ -537,7 +547,7 @@ function OrderTicket({ view, me, send }: { view: GameView; me: PublicPlayer; sen
           ))}
         </ul>
         <p class="muted small">{waiting > 0 ? `En attente de ${waiting} joueur${waiting > 1 ? "s" : ""}…` : "Le marché va clôturer."}</p>
-        <button class="btn btn-ghost btn-block" type="button" onClick={() => setEditing(true)}>
+        <button class="btn btn-ghost btn-block" type="button" data-sound="press.abort" onClick={() => setEditing(true)}>
           <Icon name="arrowLeft" size={16} /> Modifier mes ordres
         </button>
       </div>
@@ -574,13 +584,13 @@ function OrderTicket({ view, me, send }: { view: GameView; me: PublicPlayer; sen
                 </span>
               </div>
               <div class="order-stepper" role="group" aria-label={`Ordre ${info.name}`}>
-                <button type="button" class="btn btn-outline btn-icon" disabled={q <= minQ} onClick={() => setOrders({ ...orders, [c.id]: q - 1 })} aria-label={`Vendre un lot de ${info.name}`}>
+                <button type="button" data-sound="stepper.decrement" class="btn btn-outline btn-icon" disabled={q <= minQ} onClick={() => setOrders({ ...orders, [c.id]: q - 1 })} aria-label={`Vendre un lot de ${info.name}`}>
                   −
                 </button>
                 <output class={`mono order-q ${q > 0 ? "buy" : q < 0 ? "sell" : ""}`}>
                   {q > 0 ? `Achat ${q}` : q < 0 ? `Vente ${-q}` : "—"}
                 </output>
-                <button type="button" class="btn btn-outline btn-icon" disabled={q >= RULES.maxOrder} onClick={() => setOrders({ ...orders, [c.id]: q + 1 })} aria-label={`Acheter un lot de ${info.name}`}>
+                <button type="button" data-sound="stepper.increment" class="btn btn-outline btn-icon" disabled={q >= RULES.maxOrder} onClick={() => setOrders({ ...orders, [c.id]: q + 1 })} aria-label={`Acheter un lot de ${info.name}`}>
                   +
                 </button>
               </div>
@@ -598,7 +608,7 @@ function OrderTicket({ view, me, send }: { view: GameView; me: PublicPlayer; sen
         Le prix réel dépend de la demande de tous : chaque lot net acheté fait monter le cours de {view.players.length <= 4 ? 2 : 1} écu
         {view.players.length <= 4 ? "s" : ""}. Les achats que ta caisse ne couvre pas seront réduits.
       </p>
-      <button class="btn btn-primary btn-lg btn-block" type="submit">
+      <button class="btn btn-primary btn-lg btn-block" type="submit" data-sound="press.commit">
         {submitted ? "Remplacer mes ordres" : "Passer les ordres"}
         <Icon name="check" size={20} />
       </button>
