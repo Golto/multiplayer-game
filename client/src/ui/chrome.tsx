@@ -1,14 +1,43 @@
 import { useState } from "preact/hooks";
-import { Icon } from "../icons";
+import type { JSX } from "preact";
+import { navigate } from "../router";
+import { Icon } from "./icons";
 import { applyTheme, currentTheme } from "../theme";
 import { isMuted, play, setMuted } from "../sound/engine";
 
-export function Brand({ compact = false }: { compact?: boolean }) {
+/** Lien interne : navigue sans recharger la page. */
+export function Link(props: JSX.IntrinsicElements["a"] & { href: string }) {
   return (
-    <a class={`brand ${compact ? "brand-compact" : ""}`} href="/" aria-label="Rumeurs, accueil">
+    <a
+      {...props}
+      onClick={(e) => {
+        props.onClick?.(e as never);
+        if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        navigate(props.href);
+      }}
+    />
+  );
+}
+
+/**
+ * Logo et nom en haut à gauche. Sans `href` (pendant une partie), ce n'est pas un lien : on ne
+ * quitte pas un salon par mégarde.
+ */
+export function Brand({ name = "Salle de jeux", href, compact = false }: { name?: string; href?: string; compact?: boolean }) {
+  const content = (
+    <>
       <img class="logo" src="/golpex.svg" alt="" width={28} height={28} />
-      <span class="brand-name">Rumeurs</span>
-    </a>
+      <span class="brand-name">{name}</span>
+    </>
+  );
+  const cls = `brand ${compact ? "brand-compact" : ""}`;
+  return href ? (
+    <Link class={cls} href={href} aria-label={`${name}, retour`}>
+      {content}
+    </Link>
+  ) : (
+    <span class={cls}>{content}</span>
   );
 }
 

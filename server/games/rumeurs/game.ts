@@ -17,7 +17,10 @@ import {
   type RoundReport,
   type Rumor,
   type RumorInput,
-} from "../shared/protocol.js";
+  type RumeursAction,
+} from "../../../shared/games/rumeurs.js";
+import { NAME_MAX } from "../../../shared/platform.js";
+import { GameError, type GameRoom } from "../../platform.js";
 
 export type Rng = () => number;
 
@@ -51,9 +54,9 @@ interface ExecutedTrade {
   price: number;
 }
 
-export class GameError extends Error {}
+export { GameError };
 
-export class Game {
+export class Game implements GameRoom {
   readonly code: string;
   players: PlayerState[] = [];
   hostId: string | null = null;
@@ -132,6 +135,33 @@ export class Game {
       this.onChange();
     } else {
       this.setConnected(playerId, false);
+    }
+  }
+
+  get joinable(): boolean {
+    return this.phase === "lobby" && this.players.length < RULES.maxPlayers;
+  }
+
+  get playerCount(): number {
+    return this.players.length;
+  }
+
+  /** Aiguille une action de joueur vers la bonne méthode. */
+  handle(playerId: string, action: unknown): void {
+    const a = action as RumeursAction;
+    switch (a?.t) {
+      case "start":
+        return this.start(playerId);
+      case "rumor":
+        return this.submitRumor(playerId, a.rumor);
+      case "orders":
+        return this.submitOrders(playerId, a.orders);
+      case "ready":
+        return this.markReady(playerId);
+      case "rematch":
+        return this.rematch(playerId);
+      default:
+        throw new GameError("Action inconnue.");
     }
   }
 
@@ -568,7 +598,7 @@ function cleanName(raw: string): string {
     .replace(/[\u0000-\u001f<>]/g, "")
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, RULES.nameMax);
+    .slice(0, NAME_MAX);
 }
 
 function startLots(): Record<CommodityId, number> {

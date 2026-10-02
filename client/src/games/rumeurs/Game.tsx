@@ -13,12 +13,12 @@ import {
   type PublicPlayer,
   type Rumor,
   type RumorInput,
-} from "../../../shared/protocol";
-import { Card, CommodityGlyph, PlayerSeal, Sparkline, accentVar, commodityInfo } from "../art";
-import { Icon } from "../icons";
-import { play } from "../sound/engine";
-import type { Send } from "../main";
-import { Brand, SoundToggle, ThemeToggle } from "./common";
+} from "../../../../shared/games/rumeurs";
+import { Card, CommodityGlyph, PlayerSeal, Sparkline, accentVar, commodityInfo } from "./art";
+import { Icon } from "../../ui/icons";
+import { play } from "../../sound/engine";
+import type { Send } from "./types";
+import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { ReportOverlay } from "./Report";
 
 interface Props {
@@ -69,7 +69,7 @@ export function GameScreen({ view, send, clockOffset, onLeave }: Props) {
   return (
     <div class={`page game phase-${view.phase}`}>
       <header class="game-header">
-        <Brand compact />
+        <Brand name="Rumeurs" compact />
         <div class="round-info">
           <span class="round-label">
             Séance <span class="mono">{view.round + 1}</span>

@@ -1,9 +1,9 @@
 import { useState } from "preact/hooks";
-import { RULES, type GameView } from "../../../shared/protocol";
-import { PlayerSeal, Watermark } from "../art";
-import { Icon } from "../icons";
-import type { Send } from "../main";
-import { Brand, SoundToggle, ThemeToggle } from "./common";
+import { RULES, type GameView } from "../../../../shared/games/rumeurs";
+import { PlayerSeal, Watermark } from "./art";
+import { Icon } from "../../ui/icons";
+import type { Send } from "./types";
+import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 
 export function Lobby({ view, send, onLeave }: { view: GameView; send: Send; onLeave: () => void }) {
   const [copied, setCopied] = useState(false);
@@ -29,7 +29,7 @@ export function Lobby({ view, send, onLeave }: { view: GameView; send: Send; onL
     <div class="page lobby">
       <Watermark />
       <header class="topbar">
-        <Brand />
+        <Brand name="Rumeurs" />
         <div class="topbar-actions">
           <SoundToggle />
           <ThemeToggle />

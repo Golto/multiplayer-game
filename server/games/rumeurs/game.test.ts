@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Game, GameError, cardClaimHolds, finalValue } from "./game.js";
-import { RULES, emptyOrders } from "../shared/protocol.js";
+import { RULES, emptyOrders } from "../../../shared/games/rumeurs.js";
 
 function seeded(seed = 42) {
   let s = seed;
@@ -127,5 +127,30 @@ describe("vérification des rumeurs", () => {
   it("borne la valeur finale à zéro", () => {
     expect(finalValue({ cards: [{ value: -8 }, { value: -8 }, { value: -8 }] })).toBe(0);
     expect(finalValue({ cards: [{ value: 4 }, { value: -1 }] })).toBe(23);
+  });
+});
+
+describe("plateforme", () => {
+  it("aiguille les actions de joueur et refuse les inconnues", () => {
+    const { game, players } = setup(3);
+    const [a, b] = players.map((p) => p.id) as [string, string];
+    expect(game.joinable).toBe(true);
+    game.handle(a, { t: "start" });
+    expect(game.phase).toBe("rumor");
+    expect(game.joinable).toBe(false);
+    game.handle(b, { t: "rumor", rumor: { kind: "silence" } });
+    expect(game.view(b).yourRumor).toEqual({ kind: "silence" });
+    expect(() => game.handle(a, { t: "inconnue" })).toThrow(GameError);
+    expect(() => game.handle(a, null)).toThrow(GameError);
+  });
+
+  it("enregistre Rumeurs dans le registre des jeux", async () => {
+    const { gameDefinition } = await import("../registry.js");
+    expect(gameDefinition("rumeurs")?.id).toBe("rumeurs");
+    expect(gameDefinition("toString")).toBeUndefined();
+    expect(gameDefinition(42)).toBeUndefined();
+    const room = gameDefinition("rumeurs")!.create("ABCDE", () => {});
+    expect(room.code).toBe("ABCDE");
+    expect(room.playerCount).toBe(0);
   });
 });

@@ -1,4 +1,4 @@
-// Serveur HTTP (fichiers du client) + WebSocket (salons de jeu).
+// Serveur HTTP (fichiers du client, API des salons) + WebSocket (salons de jeu, tous jeux confondus).
 
 import { createServer } from "node:http";
 import { randomInt } from "node:crypto";
@@ -7,13 +7,16 @@ import { dirname, join } from "node:path";
 import { existsSync } from "node:fs";
 import sirv from "sirv";
 import { WebSocketServer, type WebSocket } from "ws";
-import { Game, GameError } from "./game.js";
+import { GameError, type GameRoom } from "./platform.js";
+import { gameDefinition } from "./games/registry.js";
 import {
   CODE_ALPHABET,
   CODE_LENGTH,
   type ClientMessage,
+  type GameId,
+  type RoomInfo,
   type ServerMessage,
-} from "../shared/protocol.js";
+} from "../shared/platform.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 /** Un salon vide est supprimé après ce délai. */
@@ -21,7 +24,8 @@ const EMPTY_ROOM_TTL_MS = 15 * 60 * 1000;
 const MAX_MESSAGE_BYTES = 4096;
 
 interface Room {
-  game: Game;
+  gameId: GameId;
+  game: GameRoom;
   sockets: Map<string, WebSocket>;
   emptySince: number | null;
 }
@@ -41,12 +45,16 @@ function newCode(): string {
   }
 }
 
-function createRoom(): Room {
+function createRoom(gameId: unknown): Room {
+  const definition = gameDefinition(gameId);
+  if (!definition) throw new GameError("Ce jeu n'existe pas.");
   const code = newCode();
   const room: Room = {
+    gameId: definition.id,
     sockets: new Map(),
-    emptySince: null,
-    game: new Game(code, () => broadcast(room)),
+    // Vide tant que personne n'y est attaché : un salon orphelin finit nettoyé.
+    emptySince: Date.now(),
+    game: definition.create(code, () => broadcast(room)),
   };
   rooms.set(code, room);
   return room;
@@ -58,7 +66,7 @@ function send(ws: WebSocket, msg: ServerMessage): void {
 
 function broadcast(room: Room): void {
   for (const [playerId, ws] of room.sockets) {
-    send(ws, { t: "state", state: room.game.view(playerId) });
+    send(ws, { t: "state", game: room.gameId, state: room.game.view(playerId) });
   }
 }
 
@@ -87,10 +95,10 @@ function detach(session: Session, ws: WebSocket): void {
 function handle(ws: WebSocket, session: Session, msg: ClientMessage): void {
   switch (msg.t) {
     case "create": {
-      const room = createRoom();
+      const room = createRoom(msg.game);
       const player = room.game.addPlayer(msg.name);
       attach(room, session, player.id, ws);
-      send(ws, { t: "joined", code: room.game.code, playerId: player.id, token: player.token });
+      send(ws, { t: "joined", code: room.game.code, game: room.gameId, playerId: player.id, token: player.token });
       broadcast(room);
       return;
     }
@@ -99,7 +107,7 @@ function handle(ws: WebSocket, session: Session, msg: ClientMessage): void {
       if (!room) throw new GameError("Aucun salon avec ce code.");
       const player = room.game.addPlayer(msg.name);
       attach(room, session, player.id, ws);
-      send(ws, { t: "joined", code: room.game.code, playerId: player.id, token: player.token });
+      send(ws, { t: "joined", code: room.game.code, game: room.gameId, playerId: player.id, token: player.token });
       broadcast(room);
       return;
     }
@@ -108,7 +116,7 @@ function handle(ws: WebSocket, session: Session, msg: ClientMessage): void {
       if (!room) throw new GameError("Ce salon n'existe plus.");
       const player = room.game.resume(msg.playerId, msg.token);
       attach(room, session, player.id, ws);
-      send(ws, { t: "joined", code: room.game.code, playerId: player.id, token: player.token });
+      send(ws, { t: "joined", code: room.game.code, game: room.gameId, playerId: player.id, token: player.token });
       broadcast(room);
       return;
     }
@@ -116,25 +124,18 @@ function handle(ws: WebSocket, session: Session, msg: ClientMessage): void {
 
   const { room, playerId } = session;
   if (!room || !playerId) throw new GameError("Rejoins d'abord un salon.");
-  const game = room.game;
   switch (msg.t) {
-    case "start":
-      return game.start(playerId);
-    case "rumor":
-      return game.submitRumor(playerId, msg.rumor);
-    case "orders":
-      return game.submitOrders(playerId, msg.orders);
-    case "ready":
-      return game.markReady(playerId);
-    case "rematch":
-      return game.rematch(playerId);
+    case "action":
+      return room.game.handle(playerId, msg.action);
     case "leave":
       room.sockets.delete(playerId);
-      game.leave(playerId);
+      room.game.leave(playerId);
       session.room = null;
       session.playerId = null;
       if (room.sockets.size === 0) room.emptySince = Date.now();
       return;
+    default:
+      throw new GameError("Message inconnu.");
   }
 }
 
@@ -148,6 +149,16 @@ const server = createServer((req, res) => {
   if (req.url === "/healthz") {
     res.writeHead(200, { "content-type": "text/plain" });
     res.end(`ok ${rooms.size}`);
+    return;
+  }
+  const roomMatch = req.url?.match(/^\/api\/rooms\/([A-Za-z0-9]{1,12})$/);
+  if (roomMatch) {
+    const room = rooms.get(roomMatch[1]!.toUpperCase());
+    const info: RoomInfo | null = room
+      ? { code: room.game.code, game: room.gameId, players: room.game.playerCount, joinable: room.game.joinable }
+      : null;
+    res.writeHead(info ? 200 : 404, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
+    res.end(JSON.stringify(info ?? { error: "Aucun salon avec ce code." }));
     return;
   }
   if (serveStatic) return serveStatic(req, res);

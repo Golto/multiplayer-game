@@ -1,8 +1,16 @@
-# Rumeurs
+# Salle de jeux
 
-Jeu de bluff boursier multijoueur dans le navigateur, de 3 à 8 joueurs, avec des salons privés rejoints par code. Le design suit le système **Golpex**.
+Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu, on ouvre un salon privé et on partage son code (ou le lien `/r/CODE`). Le design suit le système **Golpex**.
 
-## Le principe
+| Adresse | Page |
+| --- | --- |
+| `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
+| `/rumeurs` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
+
+Jeu disponible : **Rumeurs**. Cartographes, Puits et Topologie apparaissent comme « Bientôt » (`shared/catalog.ts`).
+
+## Rumeurs
 
 - Quatre marchandises : Safran, Cuivre, Cacao, Indigo. La vraie valeur de chacune vaut **20 écus + la somme de ses cartes**.
 - Chaque joueur voit une carte de chaque marchandise. Une carte supplémentaire reste scellée et personne ne la voit.
@@ -25,14 +33,32 @@ Pour tester seul, ouvre trois onglets ou fenêtres de navigation privée. Chaque
 
 ## Structure
 
+La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait rien des règles. Chaque jeu se branche dessus.
+
 | Dossier | Rôle |
 | --- | --- |
-| `shared/protocol.ts` | Types, règles et messages partagés entre client et serveur |
-| `server/game.ts` | Logique de partie, autoritaire et indépendante du réseau |
-| `server/index.ts` | HTTP (fichiers du client) + WebSocket `/ws`, salons, codes, reconnexion |
-| `client/src/art.tsx` | Cartes, guillochis (hypotrochoïdes), illustrations SVG |
-| `client/src/screens/` | Accueil, salon, jeu, clôture, dévoilement final |
+| `shared/platform.ts` | Messages communs : créer, rejoindre, reprendre, quitter, et `action` (propre au jeu) |
+| `shared/catalog.ts` | Les jeux affichés dans la salle, jouables ou à venir |
+| `shared/games/rumeurs.ts` | Types, règles et actions de Rumeurs |
+| `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
+| `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
+| `server/games/registry.ts` | Les jeux disponibles côté serveur |
+| `server/games/rumeurs/` | Logique de Rumeurs et ses tests |
+| `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
+| `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
+| `client/src/games/registry.ts` | Les jeux disponibles côté client |
+| `client/src/games/rumeurs/` | Page, couverture, écrans, cartes et sons de Rumeurs |
+| `client/src/ui/` | En-tête, icônes, guillochis, pseudo mémorisé |
+| `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |
+
+## Ajouter un jeu
+
+1. **Partagé** : ajouter son identifiant à `GameId` (`shared/platform.ts`), ses types et actions dans `shared/games/<jeu>.ts`, et passer son entrée de `shared/catalog.ts` en `status: "jouable"`.
+2. **Serveur** : écrire une classe qui implémente `GameRoom` (`server/platform.ts`) dans `server/games/<jeu>/`, puis l'enregistrer dans `server/games/registry.ts`. La méthode `handle` reçoit les actions des joueurs, `view` renvoie ce que chaque joueur a le droit de voir.
+3. **Client** : fournir `Home`, `Cover` et `Room` (`client/src/games/types.ts`) dans `client/src/games/<jeu>/`, puis les enregistrer dans `client/src/games/registry.ts`.
+
+La salle, les routes `/<jeu>` et `/r/CODE`, la reconnexion, le thème et les sons d'interface fonctionnent alors sans autre code.
 
 ## Déployer sur Render
 
