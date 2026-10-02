@@ -30,6 +30,26 @@ Conquête de territoire en temps réel, de 2 à 8 joueurs, sur un plateau carré
 - Commandes : flèches, ZQSD ou WASD ; glissés du doigt ou croix directionnelle sur téléphone.
 - Le serveur avance la partie 8 fois par seconde et n'envoie que les cases qui ont changé (`TickMessage`) ; l'état complet ne part qu'aux changements de phase et aux reconnexions.
 
+## Sébastopol (`/station`)
+
+Hors jeu et hors salon : une station orbitale rétro-futuriste à explorer seul en vue subjective, hommage libre à l'esthétique d'*Alien: Isolation* (aucune ressource ni marque du jeu : tout est généré par le code). Three.js, page séparée (`client/station.html`).
+
+- **Spatioport** : sas d'amarrage (départ), hall des arrivées et sa baie sur la géante gazeuse, poste de sécurité, quai A.
+- **Navette** : ligne A à travers un tunnel de 280 m, appelée et lancée depuis les bornes (`E`).
+- **Habitation** : quai B, atrium sur trois niveaux (escaliers, balcons, ascenseur vitré), centre médical, coursive et logements, salon panorama.
+- Souris pour regarder, ZQSD/WASD (lus par position de touche, donc corrects en AZERTY comme en QWERTY), Maj pour courir, `E` pour utiliser, `M` pour le plan, chiffres pour choisir un niveau dans l'ascenseur.
+- `?spot=atrium` (ou `hall`, `salon`, `medical`, `logement`, `navette`…) démarre ailleurs ; `?q=basse` réduit la qualité.
+
+| Fichier | Rôle |
+| --- | --- |
+| `client/src/station/world.ts` | Plan de la station : salles, couloirs, mobilier, zones nommées, points de départ |
+| `client/src/station/kit.ts` | Kit de construction : salles percées, couloirs chanfreinés à nervures, escaliers, garde-corps ; fusion de la géométrie par matériau, collisions et sols |
+| `client/src/station/dynamic.ts` | Portes automatiques, ascenseur, navette, écrans cathodiques animés |
+| `client/src/station/props.ts` | Mobilier : bancs, consoles, lits, couchettes, casiers, bar… |
+| `client/src/station/textures.ts` | Textures dessinées dans des canvas (panneaux rivetés, caillebotis, enseignes, écrans) |
+| `client/src/station/lights.ts` | Réserve de 12 lumières réattribuées aux lampes les plus proches |
+| `client/src/station/sky.ts`, `post.ts`, `audio.ts`, `player.ts` | Ciel et planète, rendu rétro, ambiance sonore synthétisée, déplacement et collisions |
+
 ## Développer
 
 ```bash

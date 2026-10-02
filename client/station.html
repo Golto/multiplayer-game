@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sébastopol</title>
+    <meta name="description" content="Sébastopol : une station orbitale rétro-futuriste à explorer en vue subjective." />
+    <link rel="icon" type="image/svg+xml" href="/golpex.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" />
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="crosshair" aria-hidden="true"></div>
+    <div id="banner" class="banner" role="status"></div>
+    <div id="prompt" class="prompt is-hidden" role="status"></div>
+    <div id="ride" class="ride is-hidden" role="status"></div>
+
+    <section id="map" class="map is-hidden" aria-label="Plan de la station">
+      <header><span id="map-title"></span><span id="map-level"></span></header>
+      <canvas id="map-canvas"></canvas>
+      <footer><kbd>M</kbd> fermer le plan</footer>
+    </section>
+
+    <section id="overlay" class="overlay">
+      <div class="terminal">
+        <p class="boot">KESTREL SYSTÈMES · TERMINAL D'ACCUEIL v2.04</p>
+        <h1>SÉBASTOPOL</h1>
+        <p class="lead">Station orbitale · exploration libre</p>
+        <p class="intro">
+          Une station de transit en orbite d'une géante gazeuse. La navette vous a déposé au sas 3. Personne n'est venu vous accueillir.
+          Prenez votre temps : il n'y a rien d'autre à faire que regarder.
+        </p>
+        <dl class="controls">
+          <div><dt>Souris</dt><dd>regarder</dd></div>
+          <div><dt>Z Q S D / W A S D</dt><dd>se déplacer</dd></div>
+          <div><dt>Maj</dt><dd>courir</dd></div>
+          <div><dt>E</dt><dd>utiliser (ascenseurs, navette)</dd></div>
+          <div><dt>M</dt><dd>plan de la station</dd></div>
+          <div><dt>Échap</dt><dd>pause</dd></div>
+        </dl>
+        <div class="actions">
+          <button id="enter" type="button" disabled>Initialisation…</button>
+          <button id="quality" type="button" class="ghost">Qualité : haute</button>
+          <button id="sound" type="button" class="ghost">Son : actif</button>
+        </div>
+        <p id="status" class="status">Chargement de la station…</p>
+        <p class="credit">Hommage libre à l'esthétique d'<em>Alien: Isolation</em>. Tout est généré par le code. <a href="/">← Salle de jeux</a></p>
+      </div>
+    </section>
+    <script type="module" src="/src/station/main.ts"></script>
+  </body>
+</html>
