@@ -1,0 +1,661 @@
+/* Cartographes : carte, carnet, clavier de pictogrammes, journal, couverture. */
+
+/* ---------------------------------------------------------------- terrains */
+
+:root {
+  --t-eau: hsl(205 72% 74%);
+  --t-plaine: hsl(76 58% 80%);
+  --t-foret: hsl(128 34% 52%);
+  --t-montagne: hsl(28 16% 64%);
+  --t-village: hsl(18 92% 72%);
+  --t-ink: hsl(25 30% 12% / 0.62);
+  --t-paper: hsl(38 40% 94%);
+}
+.dark {
+  --t-eau: hsl(207 52% 38%);
+  --t-plaine: hsl(78 30% 36%);
+  --t-foret: hsl(130 32% 26%);
+  --t-montagne: hsl(28 10% 40%);
+  --t-village: hsl(18 70% 44%);
+  --t-ink: hsl(40 40% 96% / 0.7);
+  --t-paper: hsl(30 8% 17%);
+}
+.t-eau {
+  fill: var(--t-eau);
+  background: var(--t-eau);
+}
+.t-plaine {
+  fill: var(--t-plaine);
+  background: var(--t-plaine);
+}
+.t-foret {
+  fill: var(--t-foret);
+  background: var(--t-foret);
+}
+.t-montagne {
+  fill: var(--t-montagne);
+  background: var(--t-montagne);
+}
+.t-village {
+  fill: var(--t-village);
+  background: var(--t-village);
+}
+.t-vierge {
+  fill: var(--t-paper);
+}
+.tile-ink {
+  color: var(--t-ink);
+}
+.picto {
+  display: block;
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- carte */
+
+.carto-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+.map-paper {
+  fill: var(--t-paper);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.vierge-dot {
+  fill: var(--border);
+}
+.grid-lines line {
+  stroke: hsl(from var(--foreground) h s l / 0.12);
+  stroke-width: 1;
+  pointer-events: none;
+}
+.cell .hit {
+  fill: transparent;
+  cursor: pointer;
+}
+.cell.is-active:hover .tile {
+  filter: brightness(1.06);
+}
+.cell.is-active:hover .t-vierge {
+  fill: color-mix(in srgb, var(--primary) 14%, var(--t-paper));
+}
+.pending-fill {
+  opacity: 0.85;
+}
+.pending-ring {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 4;
+  animation: carto-march 1.4s linear infinite;
+}
+@keyframes carto-march {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+.cell.is-pending {
+  animation: pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.5);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mark circle {
+  stroke: var(--background-raised);
+  stroke-width: 1.5;
+}
+.mark path {
+  fill: none;
+  stroke: white;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mark-ok circle {
+  fill: var(--success, hsl(140 60% 36%));
+}
+.mark-ko circle {
+  fill: var(--danger);
+}
+.zone {
+  pointer-events: none;
+}
+.zone-edge {
+  fill: none;
+  stroke: hsl(from var(--foreground) h s l / 0.5);
+  stroke-width: 2;
+}
+.zone.is-charted .zone-edge {
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+.zone.is-paint .zone-edge {
+  stroke: var(--primary);
+  stroke-width: 4;
+}
+.zone.is-view .zone-edge {
+  stroke: var(--secondary);
+  stroke-width: 3;
+  stroke-dasharray: 8 5;
+}
+.zone-badge circle {
+  fill: var(--background-raised);
+  stroke: hsl(from var(--foreground) h s l / 0.5);
+  stroke-width: 1.5;
+}
+.zone-badge text {
+  font: 700 10px var(--font-sans, sans-serif);
+  fill: var(--foreground);
+}
+.zone.is-paint .zone-badge circle {
+  fill: var(--primary);
+  stroke: var(--primary);
+}
+.zone.is-paint .zone-badge text {
+  fill: white;
+}
+.zone.is-view .zone-badge circle {
+  stroke: var(--secondary);
+  stroke-width: 2.5;
+}
+
+/* ---------------------------------------------------------------- écran de jeu */
+
+.carto-header {
+  grid-template-columns: auto 1fr auto auto;
+}
+.turn-track {
+  display: flex;
+  gap: 4px;
+}
+.turn-track li {
+  width: 18px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+}
+.turn-track li.is-past {
+  background: var(--foreground-muted);
+}
+.turn-track li.is-now {
+  background: var(--primary);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.carto-clock {
+  min-width: 64px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.carto-clock.is-urgent {
+  color: var(--danger-strong);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.carto-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 340px;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  align-items: start;
+}
+.carto-left,
+.carto-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+}
+.carnet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--background-overlay);
+}
+.carnet h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: -6px;
+  color: var(--secondary-strong, var(--foreground));
+}
+.carnet-map {
+  max-width: 240px;
+}
+.who {
+  color: var(--c, inherit);
+}
+.crew-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.crew-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.crew-list li.is-away {
+  opacity: 0.5;
+}
+.crew-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crew-list li.is-you .crew-name::after {
+  content: " (toi)";
+  font-weight: 400;
+  color: var(--foreground-muted);
+}
+.crew-zones {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--foreground-muted);
+  font-size: 12px;
+}
+.carto-board .lock-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+  color: var(--foreground-muted);
+  font-size: 12px;
+}
+.carto-board .lock-dot.is-locked {
+  border: 0;
+  background: var(--c);
+  color: var(--background-raised);
+  animation: pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+
+.carto-center {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.map-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.paint-count {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  font-weight: 700;
+}
+.common-map {
+  max-height: calc(100vh - 260px);
+  filter: drop-shadow(0 6px 18px hsl(from var(--foreground) h s l / 0.12));
+}
+.brushes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+.brush {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px var(--space-3) 4px 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+}
+.brush:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.brush.is-on {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px hsl(from var(--primary) h s l / 0.3);
+}
+.brush:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.swatch {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--t-ink);
+}
+
+.composer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--background-overlay);
+}
+.composer-panel h2 {
+  margin-top: -6px;
+}
+.tray {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+.tray-slot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+button.tray-slot {
+  border-style: solid;
+  border-color: var(--foreground);
+  background: var(--background-raised);
+  cursor: pointer;
+  animation: pop 0.25s cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+button.tray-slot:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: var(--danger-strong);
+}
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.key-group-name {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--foreground-muted);
+}
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.key {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  background: var(--background-raised);
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    background 0.15s;
+}
+.key:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--background-raised));
+}
+.key:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+}
+.key-terrain {
+  color: var(--t-ink);
+}
+.key-terrain:nth-child(1) {
+  background: var(--t-eau);
+}
+.key-terrain:nth-child(2) {
+  background: var(--t-plaine);
+}
+.key-terrain:nth-child(3) {
+  background: var(--t-foret);
+}
+.key-terrain:nth-child(4) {
+  background: var(--t-montagne);
+}
+.key-terrain:nth-child(5) {
+  background: var(--t-village);
+}
+.done-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+.done-toggle input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+.submit-sum {
+  margin-left: var(--space-2);
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+.journal h2 {
+  margin-bottom: var(--space-3);
+}
+.journal-turns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 360px;
+  overflow-y: auto;
+}
+.journal-turn {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: 11px;
+  color: var(--foreground-muted);
+}
+.journal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.journal-msg {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+}
+.journal-msg.is-for-you {
+  background: color-mix(in srgb, var(--primary) 10%, var(--background-raised));
+  outline: 1.5px solid hsl(from var(--primary) h s l / 0.5);
+}
+.journal-msg.is-fresh {
+  animation: rise 0.4s ease-out backwards;
+  animation-delay: calc(var(--i) * 120ms);
+}
+.journal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.journal-pictos {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  color: var(--foreground);
+}
+.journal-pictos .picto {
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--background-raised);
+  border: 1px solid var(--border);
+  box-sizing: content-box;
+}
+.for-you-tag {
+  margin-left: var(--space-1);
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- fin */
+
+.reveal-maps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+.reveal-maps figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  animation: rise 0.6s ease-out backwards;
+}
+.reveal-maps figure:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.duo {
+  display: inline-flex;
+}
+.duo .seal + .seal {
+  margin-left: -8px;
+}
+.carto-bar .bar-cash {
+  background: var(--c);
+}
+
+/* ---------------------------------------------------------------- page du jeu et couverture */
+
+.vocab {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-6);
+  max-width: 560px;
+}
+.vocab-key {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  background: var(--background-raised);
+  animation: rise 0.4s ease-out backwards;
+  animation-delay: calc(var(--i) * 30ms + 150ms);
+}
+.carto-cover {
+  width: 360px;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.carto-cover .cover-blank .tile {
+  fill: var(--t-paper);
+}
+.cover-cursor {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-dasharray: 6 5;
+}
+.game-box.is-playable:hover .cover-cursor {
+  animation: carto-march 1.2s linear infinite;
+}
+.cover-bubble path {
+  fill: var(--background-raised);
+  stroke: var(--foreground);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.cover-bubble {
+  color: var(--foreground);
+}
+.cover-bubble .picto {
+  color: var(--foreground);
+}
+.cover-bubble-reply path {
+  fill: color-mix(in srgb, var(--primary) 14%, var(--background-raised));
+}
+.game-box.is-playable:hover .cover-bubble {
+  animation: carto-bob 1.4s ease-in-out infinite;
+}
+.game-box.is-playable:hover .cover-bubble-reply {
+  animation-delay: -0.7s;
+}
+@keyframes carto-bob {
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+/* ---------------------------------------------------------------- adaptatif */
+
+@media (max-width: 1240px) {
+  .carto-grid {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .carto-right {
+    grid-column: 1 / -1;
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+@media (max-width: 860px) {
+  .carto-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-3) var(--space-4) var(--space-6);
+  }
+  .carto-left,
+  .carto-right {
+    position: static;
+    display: flex;
+    align-items: stretch;
+  }
+  .carto-center {
+    order: -1;
+  }
+  .carnet-map {
+    max-width: 200px;
+  }
+  .carto-header {
+    grid-template-columns: auto 1fr auto;
+    padding: var(--space-2) var(--space-4);
+  }
+  .carto-header .round-info {
+    display: none;
+  }
+  .common-map {
+    max-height: none;
+  }
+  .reveal-maps {
+    grid-template-columns: 1fr;
+  }
+}

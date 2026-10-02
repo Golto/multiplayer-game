@@ -69,11 +69,15 @@ export const CATALOG: readonly CatalogEntry[] = [
     tags: ["Tours simultanés", "Physique", "Versus"],
   },
   {
-    status: "bientot",
+    status: "jouable",
+    id: "cartographes",
     name: "Cartographes",
     tagline: "Reconstituer la carte à l'aveugle",
+    pitch:
+      "Chacun ne voit que son morceau d'une carte tirée au hasard. Pour la reconstituer ensemble avant la fin du chrono, vous n'avez que des pictogrammes. Les malentendus font tout le sel du jeu.",
     players: "3 à 6",
-    tags: ["Coopératif", "Communication"],
+    duration: "15 min",
+    tags: ["Coopératif", "Asymétrique", "Communication"],
   },
 ];
 
