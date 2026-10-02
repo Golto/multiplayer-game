@@ -23,25 +23,10 @@ function Cartographes() {
   );
 }
 
-function Puits() {
-  return (
-    <g {...STROKE}>
-      <circle cx="40" cy="40" r="5" fill="currentColor" />
-      <circle cx="40" cy="40" r="13" opacity="0.6" />
-      <circle cx="40" cy="40" r="22" opacity="0.35" />
-      <circle cx="74" cy="48" r="4" fill="currentColor" />
-      <circle cx="74" cy="48" r="11" opacity="0.5" />
-      <path d="M8 70C26 66 30 22 52 22C70 22 64 60 98 60" stroke-dasharray="2 5" />
-      <path d="M94 56L98 60L93 63" />
-    </g>
-  );
-}
-
-const DRAWINGS: Record<string, () => JSX.Element> = { Cartographes, Puits };
+const DRAWINGS: Record<string, () => JSX.Element> = { Cartographes };
 
 const SEEDS: Record<string, { R: number; r: number; d: number }> = {
   Cartographes: { R: 60, r: 24, d: 40 },
-  Puits: { R: 64, r: 20, d: 30 },
 };
 
 export function UpcomingCover({ name }: { name: string }) {

@@ -56,8 +56,9 @@
 .shelf-playable {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
 }
+/* auto-fill : un jeu seul en préparation garde la taille d'une case au lieu d'occuper toute la ligne. */
 .shelf-upcoming {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
 }
 .shelf-subtitle {
   margin: var(--space-8) 0 var(--space-4);

@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie`, `/puzzle` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle`, `/puits` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs**, **Topologie** et **Puzzle**. Cartographes et Puits apparaissent comme « Bientôt » (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle** et **Puits**. Cartographes apparaît comme « Bientôt » (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -39,6 +39,19 @@ Puzzle coopératif de 1 à 8 joueurs : tout le salon assemble le même puzzle, e
 - Une pièce tenue est verrouillée pour les autres, et ses déplacements s'affichent chez tout le monde en direct. On peut rejoindre un puzzle en cours.
 - Outils : molette ou boutons pour zoomer, glisser le fond pour se déplacer, « Modèle » pour afficher l'image en filigrane, « Bords d'abord » pour estomper les pièces intérieures.
 - La découpe (tenons et mortaises) est tirée au sort à chaque partie à partir d'une graine partagée : seule la graine circule, le client recalcule les contours.
+
+## Puits
+
+Versus en tours simultanés, de 2 à 6 joueurs. On ne pilote pas son vaisseau : on pose des puits de gravité.
+
+- Les vaisseaux tournent autour d'un soleil. Toucher le soleil ou sortir de l'arène (le vide) élimine.
+- Chaque tour, chacun pose en secret un **puits** (attire) ou un **répulseur** (repousse), ou passe. Pendant la planification, des pointillés montrent la trajectoire prévue de chaque vaisseau avec sa propre pose ; celles des autres restent cachées jusqu'à la résolution.
+- Puis 3 secondes de physique : tous les puits agissent sur tous les vaisseaux. Un puits dure trois tours en faiblissant. Les vaisseaux rebondissent entre eux (chocs élastiques), d'où les réactions en chaîne.
+- Points : éclat ramassé +1, élimination provoquée +2 (attribuée au joueur qui a le plus poussé la victime pendant le tour, ricochets compris), encore en vol à la fin de la manche +3. Un joueur éliminé continue de poser des puits.
+- 3 manches de 8 tours au plus ; une manche s'arrête quand il ne reste qu'un vaisseau.
+- La simulation (`shared/games/puits.ts`) n'utilise que +, −, ×, ÷ et la racine carrée : elle donne le même résultat partout. Le serveur n'envoie que l'état de départ et les poses, chaque client rejoue le tour lui-même.
+
+`PUITS_PLAN_SECONDS=12 npm start` raccourcit la planification, pratique pour tester.
 
 ## Sébastopol (`/station`)
 
@@ -84,18 +97,21 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/rumeurs.ts` | Types, règles et actions de Rumeurs |
 | `shared/games/topologie.ts` | Surfaces et recollements, règles, messages de Topologie |
 | `shared/games/puzzle.ts` | Grilles, découpe des pièces, règles et messages du Puzzle |
+| `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
 | `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
 | `server/games/rumeurs/` | Logique de Rumeurs et ses tests |
 | `server/games/topologie/` | Simulation de Topologie et ses tests |
 | `server/games/puzzle/` | Table du Puzzle (verrous, aimantation) et ses tests |
+| `server/games/puits/` | Tours de Puits (poses secrètes, résolution, scores) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
 | `client/src/games/rumeurs/` | Page, couverture, écrans, cartes et sons de Rumeurs |
 | `client/src/games/topologie/` | Page, couverture, arène en canvas, schémas de surfaces |
 | `client/src/games/puzzle/` | Page, couverture, dessins SVG, table de jeu en glisser-déposer |
+| `client/src/games/puits/` | Page, couverture, arène en canvas, aperçu des trajectoires, relecture des tours |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |
