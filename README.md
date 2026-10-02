@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie`, `/puzzle`, `/puits` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle** et **Puits**. Cartographes apparaît comme « Bientôt » (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits** et **Cartographes** (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -52,6 +52,19 @@ Versus en tours simultanés, de 2 à 6 joueurs. On ne pilote pas son vaisseau : 
 - La simulation (`shared/games/puits.ts`) n'utilise que +, −, ×, ÷ et la racine carrée : elle donne le même résultat partout. Le serveur n'envoie que l'état de départ et les poses, chaque client rejoue le tour lui-même.
 
 `PUITS_PLAN_SECONDS=12 npm start` raccourcit la planification, pratique pour tester.
+
+## Cartographes
+
+Coopératif asymétrique, tour par tour, de 3 à 6 joueurs.
+
+- Une carte est tirée au hasard (eau, plaine, forêt, montagne, villages) et découpée en zones de 4 × 4 cases. Chaque joueur voit une zone, mais c'est le joueur suivant qui la peint sur la carte commune : il faut la lui décrire. À 3 ou 5 joueurs, une zone de plus est déjà dessinée et sert de repère.
+- On ne communique qu'avec des pictogrammes : terrains, directions, nombres, formes (case, ligne, colonne, coin, bord, centre, toute la zone) et réponses. Réponses et directions reprennent les icônes Golpex ; les autres sont dessinés au même trait.
+- Chaque tour, en même temps : un message de 4 pictogrammes au plus et 4 cases peintes au plus. Messages et peinture apparaissent ensemble à la fin du tour.
+- Le carnet de celui qui voit une zone marque ce que la carte commune en a juste ou faux : à lui de le faire comprendre.
+- 7 tours (75 s chacun), ou moins si tout le monde déclare la carte terminée. On compare alors la carte dressée au vrai territoire.
+- Le terrain des autres zones ne quitte jamais le serveur avant la fin de la partie.
+
+`CARTO_TURN_SECONDS=20 npm start` raccourcit les tours, pratique pour tester.
 
 ## Sébastopol (`/station`)
 
@@ -98,6 +111,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/topologie.ts` | Surfaces et recollements, règles, messages de Topologie |
 | `shared/games/puzzle.ts` | Grilles, découpe des pièces, règles et messages du Puzzle |
 | `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
+| `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
 | `server/index.ts` | HTTP, API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
@@ -105,6 +119,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `server/games/topologie/` | Simulation de Topologie et ses tests |
 | `server/games/puzzle/` | Table du Puzzle (verrous, aimantation) et ses tests |
 | `server/games/puits/` | Tours de Puits (poses secrètes, résolution, scores) et ses tests |
+| `server/games/cartographes/` | Tours de Cartographes (information cachée, carte commune) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
@@ -112,6 +127,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `client/src/games/topologie/` | Page, couverture, arène en canvas, schémas de surfaces |
 | `client/src/games/puzzle/` | Page, couverture, dessins SVG, table de jeu en glisser-déposer |
 | `client/src/games/puits/` | Page, couverture, arène en canvas, aperçu des trajectoires, relecture des tours |
+| `client/src/games/cartographes/` | Page, couverture, pictogrammes, carte en SVG, carnet, journal |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |

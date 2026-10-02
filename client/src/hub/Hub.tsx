@@ -47,7 +47,8 @@ export function Hub({ send, connecting }: { send: PlatformSend; connecting: bool
               Les jeux
             </h2>
             <span class="muted small">
-              {playable.length} jouable{playable.length > 1 ? "s" : ""} · {upcoming.length} en préparation
+              {playable.length} jouable{playable.length > 1 ? "s" : ""}
+              {upcoming.length > 0 && ` · ${upcoming.length} en préparation`}
             </span>
           </div>
 
@@ -59,6 +60,7 @@ export function Hub({ send, connecting }: { send: PlatformSend; connecting: bool
           {upcoming.length > 0 && (
             <h3 class="shelf-subtitle h6 muted">En préparation</h3>
           )}
+          {upcoming.length > 0 && (
           <ul class="shelf shelf-upcoming">
             {upcoming.map((g, i) => (
               <li class="game-box is-upcoming" style={{ "--i": playable.length + i } as never}>
@@ -79,6 +81,7 @@ export function Hub({ send, connecting }: { send: PlatformSend; connecting: bool
               </li>
             ))}
           </ul>
+          )}
         </section>
 
         <section class="hub-elsewhere" aria-labelledby="elsewhere-title">
