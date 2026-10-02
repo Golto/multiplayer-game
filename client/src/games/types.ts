@@ -14,6 +14,8 @@ export interface RoomProps {
   /** État envoyé par le serveur pour ce joueur, propre au jeu. */
   state: unknown;
   sendAction: (action: unknown) => void;
+  /** S'abonne aux événements rapides du salon ; renvoie la fonction de désabonnement. */
+  subscribe: (listener: (event: unknown) => void) => () => void;
   onLeave: () => void;
 }
 

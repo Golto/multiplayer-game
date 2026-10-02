@@ -54,7 +54,7 @@ function createRoom(gameId: unknown): Room {
     sockets: new Map(),
     // Vide tant que personne n'y est attaché : un salon orphelin finit nettoyé.
     emptySince: Date.now(),
-    game: definition.create(code, () => broadcast(room)),
+    game: definition.create(code, { changed: () => broadcast(room), emit: (event) => emit(room, event) }),
   };
   rooms.set(code, room);
   return room;
@@ -68,6 +68,12 @@ function broadcast(room: Room): void {
   for (const [playerId, ws] of room.sockets) {
     send(ws, { t: "state", game: room.gameId, state: room.game.view(playerId) });
   }
+}
+
+function emit(room: Room, event: unknown): void {
+  // Sérialisé une seule fois : le même message part vers tous les joueurs.
+  const payload = JSON.stringify({ t: "event", game: room.gameId, event } satisfies ServerMessage);
+  for (const ws of room.sockets.values()) if (ws.readyState === ws.OPEN) ws.send(payload);
 }
 
 function attach(room: Room, session: Session, playerId: string, ws: WebSocket): void {
@@ -211,5 +217,5 @@ setInterval(() => {
 }, 60_000).unref();
 
 server.listen(PORT, () => {
-  console.log(`Rumeurs écoute sur http://localhost:${PORT}`);
+  console.log(`Salle de jeux à l’écoute sur http://localhost:${PORT}`);
 });

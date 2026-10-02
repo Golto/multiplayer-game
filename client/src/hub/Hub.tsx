@@ -51,10 +51,15 @@ export function Hub({ send, connecting }: { send: PlatformSend; connecting: bool
             </span>
           </div>
 
-          <ul class="shelf">
+          <ul class={`shelf shelf-playable ${playable.length === 1 ? "is-solo" : ""}`}>
             {playable.map((g, i) => (
               <GameBox game={g} index={i} />
             ))}
+          </ul>
+          {upcoming.length > 0 && (
+            <h3 class="shelf-subtitle h6 muted">En préparation</h3>
+          )}
+          <ul class="shelf shelf-upcoming">
             {upcoming.map((g, i) => (
               <li class="game-box is-upcoming" style={{ "--i": playable.length + i } as never}>
                 <div class="box-cover">

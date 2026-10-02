@@ -149,7 +149,7 @@ describe("plateforme", () => {
     expect(gameDefinition("rumeurs")?.id).toBe("rumeurs");
     expect(gameDefinition("toString")).toBeUndefined();
     expect(gameDefinition(42)).toBeUndefined();
-    const room = gameDefinition("rumeurs")!.create("ABCDE", () => {});
+    const room = gameDefinition("rumeurs")!.create("ABCDE", { changed: () => {}, emit: () => {} });
     expect(room.code).toBe("ABCDE");
     expect(room.playerCount).toBe(0);
   });

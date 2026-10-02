@@ -172,6 +172,7 @@ export type SoundId =
   | "system.lock"
   | "system.unlock"
   | "system.offline"
+  | "drag.drop"
   | "card.hover"
   | "card.flip";
 

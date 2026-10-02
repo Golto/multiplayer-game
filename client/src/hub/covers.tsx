@@ -37,22 +37,11 @@ function Puits() {
   );
 }
 
-function Topologie() {
-  return (
-    <g {...STROKE}>
-      <path d="M18 40C18 22 38 22 53 40C68 58 88 58 88 40C88 22 68 22 53 40C38 58 18 58 18 40Z" />
-      <path d="M28 40C28 32 38 32 46 40" opacity="0.5" />
-      <path d="M78 40C78 48 68 48 60 40" opacity="0.5" />
-    </g>
-  );
-}
-
-const DRAWINGS: Record<string, () => JSX.Element> = { Cartographes, Puits, Topologie };
+const DRAWINGS: Record<string, () => JSX.Element> = { Cartographes, Puits };
 
 const SEEDS: Record<string, { R: number; r: number; d: number }> = {
   Cartographes: { R: 60, r: 24, d: 40 },
   Puits: { R: 64, r: 20, d: 30 },
-  Topologie: { R: 56, r: 21, d: 44 },
 };
 
 export function UpcomingCover({ name }: { name: string }) {

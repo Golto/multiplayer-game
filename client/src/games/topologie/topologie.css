@@ -1,0 +1,462 @@
+/* Topologie : arène, schémas de surfaces, couverture. */
+
+/* ---------------------------------------------------------------- schéma de surface */
+
+.surface-diagram {
+  flex: none;
+  overflow: visible;
+}
+.diagram-fill {
+  fill: color-mix(in srgb, var(--primary) 6%, var(--background-overlay));
+}
+.diagram-edge {
+  stroke-width: 3;
+}
+.diagram-sides,
+.diagram-sides path {
+  stroke: var(--primary);
+}
+.diagram-ends,
+.diagram-ends path {
+  stroke: var(--secondary);
+}
+.diagram-arrow path {
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.diagram-wall {
+  stroke: var(--danger);
+  stroke-width: 5;
+  stroke-dasharray: 2 4;
+}
+
+/* ---------------------------------------------------------------- page du jeu et couverture */
+
+.surface-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  max-width: 620px;
+}
+.surface-gallery li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  text-align: center;
+  animation: rise 0.5s ease-out backwards;
+  animation-delay: calc(var(--i) * 90ms + 100ms);
+  transition: transform 0.3s;
+}
+.surface-gallery li:hover {
+  transform: translateY(-3px);
+}
+.surface-name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.topo-cover {
+  width: 360px;
+  max-width: 100%;
+  height: auto;
+}
+.cover-board {
+  fill: var(--background-overlay);
+}
+.cover-land {
+  opacity: 0.55;
+}
+.cover-a,
+.cover-a-head {
+  fill: var(--accent-amethyst);
+}
+.cover-b,
+.cover-b-head {
+  fill: var(--accent-green);
+}
+.cover-trail {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cover-a-trail {
+  stroke: var(--accent-amethyst);
+}
+.cover-b-trail {
+  stroke: var(--accent-green);
+}
+.cover-head {
+  stroke: var(--background-overlay);
+  stroke-width: 3;
+}
+.cover-edge {
+  stroke-width: 3;
+}
+.cover-chevron path {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cover-sides {
+  stroke: var(--primary);
+}
+.cover-ends {
+  stroke: var(--secondary);
+}
+.game-box.is-playable:hover .cover-a-head {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- arène */
+
+.topo-arena .game-header {
+  grid-template-columns: auto 1fr auto auto;
+}
+.surface-pill {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--secondary) 16%, transparent);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.topo-clock {
+  min-width: 64px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.topo-clock.is-urgent {
+  color: var(--danger-strong);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.topo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  align-items: start;
+}
+.topo-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.topo-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: min(calc(100vh - 120px), 900px);
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+}
+.topo-canvas {
+  display: block;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  touch-action: none;
+}
+.topo-toast {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 600;
+  animation: rise 0.3s ease-out;
+}
+
+/* Le plateau reste visible : on y repère sa tête avant de choisir sa direction. */
+.topo-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--space-4);
+  pointer-events: none;
+}
+.countdown-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 360px;
+  padding: var(--space-4) var(--space-5);
+  background: hsl(from var(--background-overlay) h s l / 0.92);
+  text-align: center;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.3);
+}
+.countdown-number {
+  font-size: 48px;
+  line-height: 56px;
+  font-weight: 700;
+  color: var(--primary);
+  animation: pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.5);
+}
+
+.topo-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+}
+.surface-card {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  background: var(--background-overlay);
+}
+.surface-card .eyebrow {
+  margin-bottom: 2px;
+}
+.surface-hint {
+  margin-top: var(--space-2);
+}
+.scoreboard h2 {
+  margin-bottom: var(--space-3);
+}
+.score-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-5);
+}
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+}
+.score-row.is-away {
+  opacity: 0.5;
+}
+.score-body {
+  flex: 1;
+  min-width: 0;
+}
+.score-top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+.score-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.score-row.is-you .score-name::after {
+  content: " (toi)";
+  font-weight: 400;
+  color: var(--foreground-muted);
+}
+.score-bar {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--background);
+  overflow: hidden;
+}
+.score-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c);
+  transition: width 0.4s ease-out;
+}
+.controls-help {
+  color: var(--foreground-muted);
+}
+kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 0 5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  background: var(--background-overlay);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  color: var(--foreground);
+}
+
+.dpad {
+  display: none;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(2, 56px);
+  gap: var(--space-2);
+}
+.dpad .btn {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  touch-action: none;
+}
+.dpad-0 {
+  grid-column: 2;
+  grid-row: 1;
+}
+.dpad-3 {
+  grid-column: 1;
+  grid-row: 2;
+}
+.dpad-2 {
+  grid-column: 2;
+  grid-row: 2;
+}
+.dpad-1 {
+  grid-column: 3;
+  grid-row: 2;
+}
+@media (pointer: coarse), (max-width: 720px) {
+  .dpad {
+    display: grid;
+  }
+}
+
+/* ---------------------------------------------------------------- résultats */
+
+.topo-results {
+  width: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.results-list li {
+  display: grid;
+  grid-template-columns: 28px auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--background-overlay);
+  border: 1px solid var(--border);
+  animation: rise 0.4s ease-out backwards;
+  animation-delay: calc(var(--i) * 120ms + 150ms);
+}
+.results-list li.is-you {
+  border-color: var(--primary);
+}
+.results-list li:first-child .rank {
+  color: var(--primary);
+}
+.results-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.results-share {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c);
+}
+.next-surface {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border);
+}
+
+.rounds-table {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.rounds-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border);
+  background: var(--background-overlay);
+}
+.rounds-head {
+  border-top: 0;
+  background: var(--background);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground-muted);
+}
+.rounds-surface {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------- adaptatif */
+
+@media (max-width: 1100px) {
+  .topo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .topo-side {
+    position: static;
+  }
+  .topo-canvas-wrap {
+    height: min(100vw - 48px, calc(100vh - 220px));
+  }
+}
+
+@media (max-width: 720px) {
+  .topo-grid {
+    padding: var(--space-3) var(--space-3) var(--space-6);
+  }
+  .topo-arena .game-header {
+    grid-template-columns: auto 1fr auto;
+  }
+  .surface-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .topo-canvas-wrap {
+    height: calc(100vw - 24px);
+    min-height: 0;
+  }
+  .surface-card .surface-diagram {
+    width: 64px;
+    height: 64px;
+  }
+  .results-list li {
+    grid-template-columns: 24px auto minmax(0, 1fr) auto;
+  }
+  .results-list li .small {
+    display: none;
+  }
+  .rounds-surface .surface-diagram {
+    display: none;
+  }
+}

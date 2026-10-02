@@ -36,6 +36,17 @@ export const CATALOG: readonly CatalogEntry[] = [
     tags: ["Bluff", "Déduction", "Tours simultanés"],
   },
   {
+    status: "jouable",
+    id: "topologie",
+    name: "Topologie",
+    tagline: "Conquête sur des surfaces recollées",
+    pitch:
+      "Trace des boucles pour agrandir ton territoire sur un tore, un ruban de Möbius, une bouteille de Klein ou un plan projectif. Les bords se recollent, parfois en miroir : sers-t'en pour piéger les autres.",
+    players: "2 à 8",
+    duration: "8 min",
+    tags: ["Temps réel", "Territoire", "Mathématiques"],
+  },
+  {
     status: "bientot",
     name: "Cartographes",
     tagline: "Reconstituer la carte à l'aveugle",
@@ -48,13 +59,6 @@ export const CATALOG: readonly CatalogEntry[] = [
     tagline: "Gravité partagée, trajectoires croisées",
     players: "2 à 6",
     tags: ["Tactique", "Physique"],
-  },
-  {
-    status: "bientot",
-    name: "Topologie",
-    tagline: "Conquête sur une bouteille de Klein",
-    players: "2 à 8",
-    tags: ["Temps réel", "Territoire"],
   },
 ];
 
