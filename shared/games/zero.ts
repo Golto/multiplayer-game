@@ -14,8 +14,9 @@
 //   manche voit son score doublé s'il n'est pas strictement le plus bas (et positif).
 // - La partie s'arrête quand quelqu'un atteint l'objectif (100 au classique) ; le plus bas gagne.
 //
-// Au degré 0, les cartes sont des constantes : x ne change rien, le terme dominant est la valeur,
-// et le paquet est celui du Skyjo. On retrouve exactement le Skyjo.
+// Le paquet suit la répartition du Skyjo comptée en x = 1, mais chaque valeur se partage entre
+// plusieurs polynômes. Au degré 0, les cartes sont des constantes : x ne change rien, le terme
+// dominant est la valeur, et le paquet est celui du Skyjo. On retrouve exactement le Skyjo.
 
 /** Un polynôme : ses coefficients, du terme constant au plus haut degré. */
 export type Poly = number[];
@@ -121,46 +122,71 @@ export interface CardKind {
   copies: number;
 }
 
+/** La répartition du Skyjo : [valeur, exemplaires]. En x = 1, chaque carte vaut sa valeur Skyjo. */
+export const SKYJO_COUNTS: [number, number][] = [
+  [-2, 5],
+  [-1, 10],
+  [0, 15],
+  ...Array.from({ length: 12 }, (_, i) => [i + 1, 10] as [number, number]),
+];
+
+/** Comment se partagent les exemplaires d'une valeur entre plusieurs polynômes. */
+function splitCopies(copies: number): number[] {
+  if (copies >= 15) return [5, 5, 5];
+  if (copies >= 10) return [4, 3, 3];
+  return [3, 2];
+}
+
 /**
- * Les sortes de cartes d'une partie, à la manière des 150 cartes du Skyjo :
- * - quinze polynômes nuls ;
- * - douze polynômes à coefficients positifs, de poids 1 à 12 (les « 1 à 12 » du Skyjo), dix fois
- *   chacun, de degré au plus `degree` et utilisant chaque degré ;
- * - quelques cartes négatives, des monômes : −2 (cinq fois), −1 (dix fois), et −x, −x², … (cinq
- *   fois chacun). Rares, elles servent à compenser un terme précis dans une colonne.
- * Au degré 0, on retrouve presque exactement le Skyjo.
+ * Les sortes de cartes d'une partie. Le paquet garde la répartition des 150 cartes du Skyjo, comptée
+ * en x = 1 (cinq −2, dix −1, quinze 0, dix de chaque valeur de 1 à 12), mais chaque valeur se partage
+ * entre plusieurs polynômes différents, aux coefficients de signes mêlés : 5x² − 3x + 4 est un « 6 ».
+ *
+ * Le terme dominant est tiré d'abord, dans un petit ensemble (±1, ±2, ±3…), puis les autres
+ * coefficients complètent pour atteindre la valeur : il y a ainsi beaucoup de cartes différentes,
+ * mais assez de termes dominants communs pour effacer des colonnes. Au degré 0, ce sont les
+ * constantes du Skyjo, rien de plus.
  */
 export function cardKinds(degree: Degree, r: () => number): CardKind[] {
   const len = degree + 1;
-  const mono = (k: number, c: number): Poly => {
-    const p: Poly = new Array(len).fill(0);
-    p[k] = c;
-    return p;
-  };
-  const kinds: CardKind[] = [{ card: new Array(len).fill(0), copies: 15 }];
-  const seen = new Set<string>();
-  for (let w = 1; w <= 12; w++) {
-    let p: Poly = [];
-    for (let tries = 0; tries < 200; tries++) {
-      p = new Array(len).fill(0);
-      // Le degré de la carte : les petits poids vont aux petits degrés, mais tous les degrés servent.
-      const top = degree === 0 ? 0 : Math.min(degree, Math.floor(((w - 1) * (degree + 1)) / 12 + r() * 1.5));
-      let rest = w;
-      p[top] = 1;
-      rest -= 1;
-      // On répartit le reste du poids sur le terme dominant et quelques autres.
-      while (rest > 0) {
-        const k = r() < 0.5 ? top : Math.floor(r() * (top + 1));
-        p[k]! += 1;
-        rest -= 1;
-      }
-      if (!seen.has(p.join(","))) break;
+  const kinds: CardKind[] = [];
+  const pick = <T,>(list: readonly T[]): T => list[Math.floor(r() * list.length)]!;
+  // Coefficients dominants symétriques : en moyenne, une carte vaut sa valeur Skyjo quel que soit x.
+  // Moins il y a de degrés, plus ils varient : les colonnes restent rares.
+  const LEADS = degree === 1 ? [1, 2, 3, 4, -1, -2, -3, -4] : [1, 2, 3, -1, -2, -3];
+  for (const [value, copies] of SKYJO_COUNTS) {
+    if (degree === 0) {
+      kinds.push({ card: [value], copies });
+      continue;
     }
-    seen.add(p.join(","));
-    kinds.push({ card: p, copies: 10 });
+    const seen = new Set<string>();
+    let constant = false;
+    for (const part of splitCopies(copies)) {
+      let card: Poly | null = null;
+      for (let tries = 0; tries < 300 && !card; tries++) {
+        const p: Poly = new Array(len).fill(0);
+        // Une constante de temps en temps (une au plus par valeur), sinon un vrai polynôme.
+        const d = !constant && r() < 0.15 ? 0 : 1 + Math.floor(r() * degree);
+        if (d === 0) p[0] = value;
+        else {
+          p[d] = pick(LEADS);
+          // Les termes intermédiaires portent une part de la valeur, avec du bruit (et parfois rien) ;
+          // la constante complète.
+          const share = (value - p[d]!) / d;
+          for (let k = 1; k < d; k++) p[k] = r() < 0.75 ? Math.round(share + r() * 6 - 3) : 0;
+          p[0] = value - p.slice(1).reduce((a, b) => a + b, 0);
+          if (Math.abs(p[0]) > 10) continue;
+        }
+        const key = p.join(",");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (d === 0) constant = true;
+        card = p;
+      }
+      if (card) kinds.push({ card, copies: part });
+      else kinds.push({ card: [value, ...new Array(degree).fill(0)], copies: part });
+    }
   }
-  kinds.push({ card: mono(0, -2), copies: 5 }, { card: mono(0, -1), copies: 10 });
-  for (let k = 1; k <= degree; k++) kinds.push({ card: mono(k, -1), copies: 5 });
   return kinds;
 }
 
