@@ -1,0 +1,611 @@
+/* Zéro : cartes polynômes, grilles, table, salle d'attente, couverture. */
+
+/* ---------------------------------------------------------------- cartes */
+
+.zcard {
+  --tint: var(--background-overlay);
+  --ink: var(--foreground);
+  --edge: var(--border);
+  position: relative;
+  display: block;
+  flex: none;
+  aspect-ratio: 100 / 140;
+  padding: 0;
+  border: 0;
+  border-radius: 10%/7%;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  container-type: inline-size;
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s;
+}
+.zcard-sm {
+  width: 48px;
+}
+.zcard-md {
+  width: 82px;
+}
+.zcard-lg {
+  width: 112px;
+}
+button.zcard {
+  cursor: pointer;
+}
+.zcard-face,
+.zcard-back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  border: 1.5px solid var(--edge);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.12));
+  overflow: hidden;
+}
+.zcard-face {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--tint) 34%, var(--background-raised)), color-mix(in srgb, var(--tint) 16%, var(--background-raised)));
+}
+.zcard-corner {
+  position: absolute;
+  top: 5%;
+  left: 8%;
+  font-size: max(9px, 13cqw);
+  font-weight: 700;
+  color: var(--edge);
+}
+.zcard-degree {
+  position: absolute;
+  bottom: 5%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: max(8px, 9cqw);
+  color: var(--foreground-muted);
+  letter-spacing: 0.04em;
+}
+.zcard-poly {
+  padding: 0 7%;
+  text-align: center;
+  font-weight: 600;
+  line-height: 1.15;
+}
+/* Les termes ne se coupent jamais ; les longs polynômes passent sur deux lignes entre deux termes. */
+.zcard-poly.fit-xl {
+  font-size: 34cqw;
+}
+.zcard-poly.fit-lg {
+  font-size: 22cqw;
+}
+.zcard-poly.fit-md {
+  font-size: 18cqw;
+}
+.zcard-poly.fit-sm {
+  font-size: 15cqw;
+}
+.zcard-sm .zcard-poly {
+  padding: 0 4%;
+}
+.zcard-sm .zcard-poly.fit-md,
+.zcard-sm .zcard-poly.fit-sm {
+  font-size: 17cqw;
+}
+
+/* Écriture mathématique. */
+.poly .var {
+  font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.12em;
+}
+.poly sup {
+  font-size: 0.62em;
+  vertical-align: 0.55em;
+  line-height: 0;
+}
+.poly .op {
+  padding: 0 0.12em;
+}
+.poly .term {
+  white-space: nowrap;
+}
+
+/* Couleurs, comme au Skyjo : bleu pour les négatives, puis vert, jaune, rouge. */
+.tone-neg {
+  --tint: var(--accent-royalblue-light);
+  --edge: var(--accent-royalblue);
+}
+.tone-zero {
+  --tint: var(--accent-turquoise-light);
+  --edge: var(--accent-turquoise);
+}
+.tone-low {
+  --tint: var(--accent-green-light);
+  --edge: var(--accent-green);
+}
+.tone-mid {
+  --tint: var(--accent-yellow-light);
+  --edge: var(--accent-peach);
+}
+.tone-high {
+  --tint: var(--accent-strawberry-light);
+  --edge: var(--accent-strawberry);
+}
+
+/* Le dos reste sombre dans les deux thèmes, comme un vrai paquet. */
+.zcard-back {
+  background: hsl(24 14% 13%);
+  border-color: hsl(24 14% 13%);
+}
+.dark .zcard-back {
+  border-color: var(--border);
+}
+.zcard-back svg {
+  width: 100%;
+  height: 100%;
+}
+.back-rosette {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 0.6;
+  opacity: 0.85;
+}
+.back-zero {
+  font: 700 30px var(--font-sans, sans-serif);
+  fill: hsl(36 30% 94%);
+  text-anchor: middle;
+}
+.zcard.is-removed {
+  border: 1.5px dashed var(--border);
+  background: transparent;
+}
+.zcard.is-empty {
+  border: 1.5px dashed var(--border);
+}
+
+/* Cases jouables, cartes qui arrivent. */
+.zcard.is-pick,
+.zcard.is-flip {
+  box-shadow: 0 0 0 3px hsl(from var(--primary) h s l / 0.5);
+}
+button.zcard.is-pick:hover,
+button.zcard.is-flip:hover {
+  transform: translateY(-4px) rotate(-1deg);
+  box-shadow: 0 0 0 3px var(--primary);
+}
+.zcard.is-flip .zcard-back {
+  animation: wiggle 1.6s ease-in-out infinite;
+}
+@keyframes wiggle {
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+.zcard.is-fresh {
+  animation: card-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1.3);
+}
+@keyframes card-in {
+  from {
+    transform: rotateY(90deg) scale(0.9);
+  }
+}
+
+/* ---------------------------------------------------------------- grilles */
+
+.zgrid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), max-content);
+  gap: 8px;
+  justify-content: center;
+}
+.zgrid-sm {
+  gap: 4px;
+}
+.zcol-sum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 18px;
+  padding-top: 2px;
+  border-top: 2px solid var(--border);
+  font-size: 12px;
+  text-align: center;
+}
+.zgrid-sm .zcol-sum {
+  font-size: 10px;
+  border-top-width: 1.5px;
+}
+.zcol-sum.is-removed {
+  color: var(--foreground-muted);
+  font-style: italic;
+  border-top-style: dashed;
+}
+.zcol-poly {
+  font-size: 13px;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.zcol-weight {
+  font-weight: 700;
+}
+.zcol-sum.has-hidden .zcol-weight {
+  color: var(--foreground-muted);
+}
+
+/* ---------------------------------------------------------------- table */
+
+.zero-header {
+  grid-template-columns: auto 1fr auto;
+}
+.level-pill {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.zero-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-areas:
+    "others side"
+    "center side"
+    "mine side";
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6) var(--space-8);
+  align-items: start;
+}
+.zero-others {
+  grid-area: others;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+.zero-opponent,
+.zero-mine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.zero-opponent.is-away {
+  opacity: 0.55;
+}
+.zero-opponent.is-turn,
+.zero-mine.is-turn {
+  border-color: var(--c);
+  box-shadow: 0 0 0 3px hsl(from var(--c) h s l / 0.25);
+}
+.zero-opponent header,
+.zero-mine header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+.opp-name {
+  font-weight: 600;
+  flex: 1;
+}
+.opp-total {
+  font-weight: 700;
+}
+.closer-tag,
+.bonus-tag {
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.bonus-tag {
+  background: color-mix(in srgb, var(--accent-royalblue) 18%, transparent);
+}
+.zero-center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+.zero-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--background-overlay);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  text-align: center;
+}
+.zero-prompt.is-mine {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  animation: pop 0.3s ease-out;
+}
+.last-turn {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.zero-piles {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.pile:disabled {
+  cursor: default;
+}
+.pile:not(:disabled):hover .zcard {
+  transform: translateY(-4px);
+}
+.pile-label {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  text-align: center;
+}
+.zhand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 150px;
+  min-height: 160px;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--border);
+}
+.zhand.has-card {
+  border-style: solid;
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+.zhand-empty {
+  margin: auto;
+  text-align: center;
+}
+.btn-sm {
+  padding: 4px var(--space-3);
+  font-size: 13px;
+}
+.zero-mine {
+  grid-area: mine;
+  align-self: center;
+  justify-self: center;
+  padding: var(--space-4);
+}
+.zero-rule {
+  max-width: 460px;
+  text-align: center;
+}
+.zero-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: var(--space-4);
+}
+.zero-totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.zero-totals li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.zero-totals .score-name {
+  flex: 1;
+  font-weight: 600;
+}
+.zero-totals li.is-you .score-name::after {
+  content: " (toi)";
+  font-weight: 400;
+  color: var(--foreground-muted);
+}
+
+/* Décompte de fin de manche. */
+.overlay-card.zero-round {
+  width: min(760px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.zero-round-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.zero-round-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--background-overlay);
+  animation: rise 0.4s ease-out backwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+.zero-round-list li.is-you {
+  outline: 2px solid var(--c);
+}
+.round-who {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "seal name score total"
+    "seal detail score total";
+  align-items: center;
+  column-gap: var(--space-3);
+}
+.round-who .seal {
+  grid-area: seal;
+}
+.round-who .results-name {
+  grid-area: name;
+  font-weight: 700;
+}
+.round-detail {
+  grid-area: detail;
+}
+.round-score {
+  grid-area: score;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c);
+}
+.round-total {
+  grid-area: total;
+  min-width: 48px;
+  text-align: right;
+  color: var(--foreground-muted);
+}
+.zero-bar .bar-cash {
+  background: var(--c);
+}
+
+/* ---------------------------------------------------------------- salle d'attente */
+
+.zero-config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.config-samples {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+.grid-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.grid-shape {
+  display: inline-grid;
+  grid-template-columns: repeat(var(--c), 4px);
+  gap: 1.5px;
+}
+.grid-shape i {
+  width: 4px;
+  height: 5px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------- couverture et page du jeu */
+
+.zero-cover {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.cover-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cover-column .zcard-md {
+  width: 64px;
+}
+.cover-equals {
+  font-size: 22px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cover-fan {
+  position: relative;
+  width: 120px;
+  height: 130px;
+}
+.cover-fan .zcard {
+  position: absolute;
+  top: 0;
+}
+.cover-fan .zcard:first-child {
+  left: 0;
+  transform: rotate(-8deg);
+}
+.cover-fan .zcard:last-child {
+  left: 34px;
+  transform: rotate(7deg);
+}
+.game-box.is-playable:hover .cover-column .zcard {
+  animation: pop 0.5s ease-out backwards;
+}
+.game-box.is-playable:hover .cover-column .zcard:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.game-box.is-playable:hover .cover-column .zcard:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.zero-hero-art {
+  margin-top: var(--space-6);
+}
+
+/* ---------------------------------------------------------------- adaptatif */
+
+@media (max-width: 1100px) {
+  .zero-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "center"
+      "mine"
+      "others"
+      "side";
+  }
+  .zero-side {
+    position: static;
+  }
+}
+@media (max-width: 720px) {
+  .zero-main {
+    padding: var(--space-3) var(--space-3) var(--space-6);
+  }
+  .zero-header .round-info {
+    display: none;
+  }
+  .zcard-md {
+    width: min(64px, calc((100vw - 64px) / var(--cols, 4) - 8px));
+  }
+  .zcard-lg {
+    width: 84px;
+  }
+  .zero-round-list li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

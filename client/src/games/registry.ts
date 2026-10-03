@@ -7,6 +7,7 @@ import { puzzle } from "./puzzle";
 import { puits } from "./puits";
 import { cartographes } from "./cartographes";
 import { echos } from "./echos";
+import { zero } from "./zero";
 import type { GameClient } from "./types";
 
-export const GAME_CLIENTS: Record<GameId, GameClient> = { rumeurs, topologie, puzzle, puits, cartographes, echos };
+export const GAME_CLIENTS: Record<GameId, GameClient> = { rumeurs, topologie, puzzle, puits, cartographes, echos, zero };
