@@ -16,6 +16,7 @@ import {
   isZero,
   neg,
   rng,
+  SKYJO_COUNTS,
   weight,
   type Poly,
   type ZeroView,
@@ -92,21 +93,26 @@ describe("degré 0", () => {
 });
 
 describe("paquet", () => {
-  it("ressemble au Skyjo : des cartes positives de poids 1 à 12, des zéros et quelques négatives", () => {
+  it("suit la répartition du Skyjo à x = 1, avec des polynômes variés", () => {
     for (const degree of [0, 1, 2, 3] as const) {
-      const kinds = cardKinds(degree, rng(7 + degree));
-      expect(isZero(kinds[0]!.card)).toBe(true);
-      const positive = kinds.filter((k) => k.card.every((c) => c >= 0) && !isZero(k.card));
-      expect(positive.map((k) => weight(k.card)).sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-      expect(new Set(positive.map((k) => k.card.join(","))).size).toBe(12);
-      const negative = kinds.filter((k) => k.card.some((c) => c < 0));
-      expect(negative.every((k) => k.card.filter((c) => c).length === 1)).toBe(true);
-      // Tous les degrés jusqu'au maximum servent.
-      const degrees = new Set(positive.map((k) => k.card.reduce((d, c, i) => (c ? i : d), -1)));
-      for (let d = 0; d <= degree; d++) expect(degrees.has(d), `degré ${d} sur ${degree}`).toBe(true);
-      for (const k of kinds) expect(k.card.length).toBe(degree + 1);
+      for (const seed of [1, 7, 42]) {
+        const kinds = cardKinds(degree, rng(seed + degree));
+        const counts = new Map<number, number>();
+        for (const k of kinds) {
+          expect(k.card.length).toBe(degree + 1);
+          const v = evaluate(k.card, 1);
+          counts.set(v, (counts.get(v) ?? 0) + k.copies);
+        }
+        expect([...counts].sort((a, b) => a[0] - b[0])).toEqual(SKYJO_COUNTS);
+        if (degree === 0) continue;
+        // De la variété : des dizaines de cartes différentes, des signes mêlés, tous les degrés.
+        expect(new Set(kinds.map((k) => k.card.join(","))).size).toBeGreaterThanOrEqual(30);
+        expect(kinds.some((k) => k.card.some((c) => c > 0) && k.card.some((c) => c < 0))).toBe(true);
+        const degrees = new Set(kinds.map((k) => k.card.reduce((d, c, i) => (c ? i : d), -1)));
+        for (let d = 1; d <= degree; d++) expect(degrees.has(d), `degré ${d} sur ${degree}`).toBe(true);
+      }
     }
-    // Au degré 0 : exactement les 150 cartes du Skyjo, mais −2 et −1 compris.
+    // Au degré 0 : exactement les 150 cartes du Skyjo.
     expect(cardKinds(0, rng(1)).reduce((s, k) => s + k.copies, 0)).toBe(150);
   });
 

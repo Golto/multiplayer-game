@@ -54,9 +54,11 @@ function layoutSizes(vw: number, vh: number, rows: number, cols: number, others:
   }
   opp = Math.max(18, Math.min(46, opp));
   const othersH = others ? lines * (gridH(opp, rows, false) + 46) : 0;
-  const availH = vh - 58 - othersH - 70;
-  const my = Math.max(40, Math.min(108, (availH - 26 - (rows - 1) * 6) / (rows * 1.4), (W - 260) / (cols + 0.3)));
-  const pile = Math.max(48, Math.min(96, my * 0.9, (availH - 90) / 2.9));
+  const availH = vh - 58 - othersH - 84;
+  const my = Math.max(40, Math.min(150, (availH - 26 - (rows - 1) * 6) / (rows * 1.4), (W - 260) / (cols + 0.3)));
+  // La pioche, la défausse et la main prennent la hauteur et la largeur laissées libres à gauche.
+  const free = W - cols * (my + 6) - 140;
+  const pile = Math.max(48, Math.min(150, (availH - 110) / 2.9, free / 2.2));
   return { compact, opp, my, pile, lines };
 }
 
@@ -181,7 +183,7 @@ export function Board({ view, send, onLeave }: Props) {
         )}
 
         <section class="zero-table">
-          <div class="zero-piles" aria-label="Pioche et défausse">
+          <div class="zero-piles" aria-label="Pioche et défausse" style={{ "--pile": `${Math.round(size.pile)}px` } as never}>
             <div class={`zero-prompt ${myTurn || (view.phase === "setup" && revealed < RULES.revealAtStart) ? "is-mine" : ""}`} role="status">
               {view.closer !== null && view.phase === "play" && (
                 <span class="last-turn">{closer?.slot === mySlot ? "Les autres jouent leur dernier tour" : `${closer?.name} a tout révélé : dernier tour !`}</span>
