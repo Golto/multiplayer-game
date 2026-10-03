@@ -3,23 +3,23 @@ import { Watermark } from "../../ui/art";
 import { Brand, Link, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { EntryPanel } from "../../ui/EntryPanel";
 import type { HomeProps } from "../types";
-import { PolyText, ZCard } from "./cards";
+import { PolyText, Sized, ZCard } from "./cards";
 
-/** Couverture : une colonne qui s'annule, et quelques cartes en éventail. */
+/** Couverture : une colonne au même terme dominant, qui va s'effacer, et deux cartes en éventail. */
 export function Cover() {
   return (
     <div class="zero-cover" aria-hidden="true">
       <div class="cover-column">
-        <ZCard cell={{ card: [0, 2, 1], up: true, removed: false }} size="md" />
-        <ZCard cell={{ card: [0, 0, -1], up: true, removed: false }} size="md" />
-        <ZCard cell={{ card: [0, -1, 0], up: true, removed: false }} size="md" />
+        <Sized width={64}><ZCard cell={{ card: [1, 0, 3], up: true, removed: false }} /></Sized>
+        <Sized width={64}><ZCard cell={{ card: [0, -1, 3], up: true, removed: false }} /></Sized>
+        <Sized width={64}><ZCard cell={{ card: [0, 0, 3], up: true, removed: false }} /></Sized>
       </div>
       <span class="cover-equals">
-        Σ = <PolyText p={[0, 1, 0]} />
+        <PolyText p={[0, 0, 3]} /> ×3
       </span>
       <div class="cover-fan">
-        <ZCard cell={{ card: null, up: false, removed: false }} size="md" />
-        <ZCard cell={{ card: [3, 0, 2], up: true, removed: false }} size="md" />
+        <Sized width={84}><ZCard cell={{ card: null, up: false, removed: false }} /></Sized>
+        <Sized width={84}><ZCard cell={{ card: [3, 0, 2], up: true, removed: false }} /></Sized>
       </div>
     </div>
   );
@@ -54,8 +54,8 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
             Zéro<span class="hero-dot">.</span>
           </h1>
           <p class="hero-lead">
-            Le Skyjo des polynômes : les cartes ne valent plus −2 à 12, ce sont des polynômes à coefficients entiers. Une colonne compte le poids de
-            sa <em>somme</em> : range tes cartes pour que leurs coefficients se compensent.
+            Le Skyjo des polynômes : les cartes sont des polynômes à coefficients entiers. À la fin de la manche, un dé tire x parmi −1, 0 et 1, et
+            chaque carte vaut P(x). Au degré 0, c'est exactement le Skyjo.
           </p>
           <div class="zero-hero-art">
             <Cover />
@@ -72,24 +72,26 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
         <ol class="how-steps">
           <li>
             <span class="how-num">01</span>
-            <h3 class="h6">Le poids</h3>
+            <h3 class="h6">Comme au Skyjo</h3>
             <p>
-              Le poids d'un polynôme est la somme des valeurs absolues de ses coefficients : <PolyText p={[3, -1, 2]} /> pèse 6. Le plus léger gagne.
+              Pioche au paquet ou à la défausse, échange avec une carte de ta grille, ou défausse et retourne une carte cachée. Le plus petit total
+              gagne.
             </p>
           </li>
           <li>
             <span class="how-num">02</span>
-            <h3 class="h6">Pioche, échange</h3>
+            <h3 class="h6">Le dé de x</h3>
             <p>
-              Comme au Skyjo : pioche au paquet ou à la défausse, échange avec une carte de ta grille, ou défausse et retourne une carte cachée.
+              À la fin de la manche, x vaut −1, 0 ou 1, et chaque carte vaut P(x) : <PolyText p={[3, -1, 2]} /> vaut 6, 3 ou 4. En x = 1, chaque
+              carte vaut sa valeur Skyjo, de −2 à 12.
             </p>
           </li>
           <li>
             <span class="how-num">03</span>
-            <h3 class="h6">Compense</h3>
+            <h3 class="h6">Même terme dominant</h3>
             <p>
-              Une colonne compte le poids de la somme de ses cartes : <PolyText p={[2, 0, 1]} /> sous <PolyText p={[0, 0, -1]} /> ne coûte que 2. Des
-              cartes identiques s'effacent ; une colonne qui s'annule s'efface aussi, avec un bonus de −{Math.abs(RULES.cancelBonus)} par carte.
+              Une colonne s'efface quand ses cartes ont le même terme dominant : <PolyText p={[1, 0, 3]} />, <PolyText p={[0, -1, 3]} /> et{" "}
+              <PolyText p={[0, 0, 3]} />. Au degré 0, ce sont trois cartes identiques.
             </p>
           </li>
           <li>

@@ -10,9 +10,9 @@ import {
   TARGETS,
   buildDeck,
   columnCells,
-  columnFate,
-  columnScore,
-  weight,
+  columnClears,
+  evaluate,
+  gridValue,
   type Cell,
   type Degree,
   type Phase,
@@ -51,7 +51,6 @@ export class ZeroGame implements GameRoom {
   deck: Poly[] = [];
   discard: Poly[] = [];
   grids = new Map<number, Cell[]>();
-  bonus = new Map<number, number>();
   turn = 0;
   step: "draw" | "place" | "flip" = "draw";
   hand: Poly | null = null;
@@ -222,14 +221,12 @@ export class ZeroGame implements GameRoom {
     this.deck = buildDeck(this.config, this.players.length, r);
     this.discard = [];
     this.grids.clear();
-    this.bonus.clear();
     const cells = this.config.rows * this.config.cols;
     for (const p of this.players) {
       this.grids.set(
         p.slot,
         Array.from({ length: cells }, () => ({ card: this.deck.pop()!, up: false })),
       );
-      this.bonus.set(p.slot, 0);
       p.ready = false;
     }
     this.discard.push(this.deck.pop()!);
@@ -269,7 +266,8 @@ export class ZeroGame implements GameRoom {
     else {
       let best = -Infinity;
       for (const p of this.players) {
-        const shown = this.grids.get(p.slot)!.filter((c) => c.up && c.card).reduce((s, c) => s + weight(c.card!), 0);
+        // Comme au Skyjo : la valeur des cartes visibles (x = 1).
+        const shown = this.grids.get(p.slot)!.filter((c) => c.up && c.card).reduce((s, c) => s + evaluate(c.card!, 1), 0);
         if (shown > best) [best, starter] = [shown, p.slot];
       }
     }
@@ -385,47 +383,38 @@ export class ZeroGame implements GameRoom {
     return slot;
   }
 
-  /** Colonnes entièrement révélées : identiques ou annulées, elles s'effacent. */
-  private checkColumns(slot: number, reveal = false): void {
+  /** Colonnes entièrement révélées dont les cartes ont le même terme dominant : elles s'effacent. */
+  private checkColumns(slot: number): void {
     const grid = this.grids.get(slot)!;
     const { rows, cols } = this.config;
     for (let c = 0; c < cols; c++) {
       const cells = columnCells(cols, rows, c).map((i) => grid[i]!);
-      if (!cells[0]!.card || !cells.every((x) => x.up || reveal)) continue;
-      const fate = columnFate(cells.map((x) => x.card!));
-      if (!fate) continue;
+      if (!cells[0]!.card || !cells.every((x) => x.up)) continue;
+      if (!columnClears(cells.map((x) => x.card!))) continue;
       for (const x of cells) {
         this.discard.push(x.card!);
         x.card = null;
         x.up = true;
       }
-      if (fate === "annulation") this.bonus.set(slot, (this.bonus.get(slot) ?? 0) + RULES.cancelBonus * rows);
-      this.lastEvent = { k: "column", slot, col: c, fate };
+      this.lastEvent = { k: "column", slot, col: c };
     }
   }
 
   // ------------------------------------------------------------ fin de manche
 
-  endRound(): void {
+  /** Tout le monde révèle, le dé tire x, chaque carte vaut P(x). */
+  endRound(x: number = RULES.xValues[Math.floor(this.rng() * RULES.xValues.length)]!): void {
     this.dispose();
-    const { rows, cols } = this.config;
     const scores: Record<number, RoundScore> = {};
     for (const p of this.players) {
       const grid = this.grids.get(p.slot)!;
       for (const c of grid) c.up = true;
       // Les colonnes complétées par la révélation finale s'effacent aussi.
-      this.checkColumns(p.slot, true);
-      let columns = 0;
-      for (let c = 0; c < cols; c++) {
-        const cards = columnCells(cols, rows, c)
-          .map((i) => grid[i]!.card)
-          .filter((x): x is Poly => !!x);
-        if (cards.length) columns += columnScore(cards);
-      }
-      const bonus = this.bonus.get(p.slot) ?? 0;
-      scores[p.slot] = { columns, bonus, doubled: false, score: columns + bonus };
+      this.checkColumns(p.slot);
+      const value = gridValue(grid.map((c) => c.card).filter((c): c is Poly => !!c), x);
+      scores[p.slot] = { cards: value, doubled: false, score: value };
     }
-    // Celui qui a clos la manche double, s'il n'est pas strictement le plus bas.
+    // Celui qui a clos la manche double, s'il n'est pas strictement le plus bas (et si c'est positif).
     if (this.closer !== null) {
       const mine = scores[this.closer]!;
       const strictlyLowest = this.players.every((p) => p.slot === this.closer || scores[p.slot]!.score > mine.score);
@@ -438,7 +427,7 @@ export class ZeroGame implements GameRoom {
       p.total += scores[p.slot]!.score;
       p.ready = false;
     }
-    this.results.push({ round: this.round, closer: this.closer ?? 0, scores });
+    this.results.push({ round: this.round, closer: this.closer ?? 0, x, scores });
     this.nextStarter = this.closer;
     this.hand = null;
     this.phase = "reveal";
@@ -514,7 +503,6 @@ export class ZeroGame implements GameRoom {
         total: p.total,
       })),
       grids,
-      bonus: Object.fromEntries(this.bonus),
       deckCount: this.deck.length,
       discardTop: this.discard[this.discard.length - 1] ?? null,
       turn: this.turn,

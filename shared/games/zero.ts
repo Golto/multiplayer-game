@@ -1,18 +1,21 @@
 // Zéro : un Skyjo dont les cartes sont des polynômes à coefficients entiers.
 //
-// Règles (adaptées du Skyjo) :
+// Règles (celles du Skyjo, deux seulement changent) :
 // - Chacun a devant lui une grille de cartes face cachée (3 × 4 au classique) et en révèle deux.
 // - À son tour, on pioche (paquet ou défausse). Une carte prise à la défausse s'échange forcément
 //   contre une carte de sa grille ; une carte du paquet s'échange, ou se défausse et l'on retourne
 //   alors une de ses cartes cachées.
-// - Le **poids** d'un polynôme est la somme des valeurs absolues de ses coefficients.
-// - Une colonne compte le poids de la **somme** de ses cartes : les coefficients se compensent
-//   avant d'être comptés, ranger ses cartes pour qu'elles s'annulent est tout le jeu.
-// - Une colonne entièrement révélée s'efface si ses cartes sont identiques (comme au Skyjo), ou si
-//   elles s'annulent (somme nulle) : c'est une annulation, qui rapporte un bonus.
+// - **Score** : à la fin de la manche, un dé tire x parmi −1, 0 et 1, et chaque carte vaut P(x).
+//   Avec x = 1, chaque carte vaut sa valeur « Skyjo » (de −2 à 12) ; avec x = 0, seule sa constante
+//   compte ; avec x = −1, les termes de degré impair changent de signe.
+// - **Colonnes** : une colonne entièrement révélée s'efface si ses cartes ont le même terme dominant
+//   (3x² + 1, 3x² − x et 3x² par exemple).
 // - Quand quelqu'un a tout révélé, chacun des autres joue une dernière fois. Celui qui a clos la
 //   manche voit son score doublé s'il n'est pas strictement le plus bas (et positif).
 // - La partie s'arrête quand quelqu'un atteint l'objectif (100 au classique) ; le plus bas gagne.
+//
+// Au degré 0, les cartes sont des constantes : x ne change rien, le terme dominant est la valeur,
+// et le paquet est celui du Skyjo. On retrouve exactement le Skyjo.
 
 /** Un polynôme : ses coefficients, du terme constant au plus haut degré. */
 export type Poly = number[];
@@ -37,8 +40,8 @@ export const RULES = {
   maxPlayers: 8,
   /** Cartes révélées par chacun en début de manche. */
   revealAtStart: 2,
-  /** Bonus d'une annulation, par carte de la colonne. */
-  cancelBonus: -2,
+  /** Les faces du dé qui tire x en fin de manche. */
+  xValues: [-1, 0, 1],
 } as const;
 
 export interface ZeroConfig {
@@ -188,20 +191,30 @@ export function columnCells(cols: number, rows: number, c: number): number[] {
   return Array.from({ length: rows }, (_, r) => r * cols + c);
 }
 
-export type ColumnFate = "identique" | "annulation" | null;
-
-/** Une colonne entièrement révélée s'efface si ses cartes sont identiques ou s'annulent. */
-export function columnFate(cards: Poly[]): ColumnFate {
-  if (cards.length < 2) return null;
-  // Une vraie compensation : au moins une carte non nulle (trois zéros sont simplement identiques).
-  if (isZero(sum(cards)) && cards.some((c) => !isZero(c))) return "annulation";
-  if (cards.every((c) => equals(c, cards[0]!))) return "identique";
-  return null;
+/** Valeur d'un polynôme en x. */
+export function evaluate(p: Poly, x: number): number {
+  return p.reduce((s, c, i) => s + c * x ** i, 0);
 }
 
-/** Score d'une colonne : le poids de la somme de ses cartes (toutes, révélées ou non). */
-export function columnScore(cards: Poly[]): number {
-  return weight(sum(cards));
+/** Terme dominant : [degré, coefficient], ou null pour le polynôme nul. */
+export function leadingTerm(p: Poly): [number, number] | null {
+  const d = degreeOf(p);
+  return d < 0 ? null : [d, p[d]!];
+}
+
+/**
+ * Une colonne entièrement révélée s'efface si toutes ses cartes ont le même terme dominant (ou sont
+ * toutes nulles). Au degré 0, c'est la règle du Skyjo : des cartes identiques.
+ */
+export function columnClears(cards: Poly[]): boolean {
+  if (cards.length < 2) return false;
+  const key = (p: Poly) => leadingTerm(p)?.join(",") ?? "0";
+  return cards.every((c) => key(c) === key(cards[0]!));
+}
+
+/** Valeur d'une grille (cartes restantes) pour un tirage de x. */
+export function gridValue(cards: Poly[], x: number): number {
+  return cards.reduce((s, p) => s + evaluate(p, x), 0);
 }
 
 // ---------------------------------------------------------------- état et messages
@@ -228,10 +241,8 @@ export interface PublicCell {
 }
 
 export interface RoundScore {
-  /** Poids des colonnes restantes. */
-  columns: number;
-  /** Bonus des annulations. */
-  bonus: number;
+  /** Somme des P(x) des cartes restantes. */
+  cards: number;
   doubled: boolean;
   score: number;
 }
@@ -239,6 +250,8 @@ export interface RoundScore {
 export interface RoundResult {
   round: number;
   closer: number;
+  /** La valeur de x tirée pour cette manche. */
+  x: number;
   scores: Record<number, RoundScore>;
 }
 
@@ -248,7 +261,7 @@ export type ZeroEvent =
   | { k: "swap"; slot: number; index: number; out: Poly }
   | { k: "discard"; slot: number }
   | { k: "flip"; slot: number; index: number }
-  | { k: "column"; slot: number; col: number; fate: Exclude<ColumnFate, null> }
+  | { k: "column"; slot: number; col: number }
   | { k: "closed"; slot: number };
 
 export interface ZeroView {
@@ -259,8 +272,6 @@ export interface ZeroView {
   round: number;
   players: ZeroPlayer[];
   grids: Record<number, PublicCell[]>;
-  /** Bonus d'annulation de la manche en cours, par slot. */
-  bonus: Record<number, number>;
   deckCount: number;
   discardTop: Poly | null;
   /** Joueur dont c'est le tour. */
