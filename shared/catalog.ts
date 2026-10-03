@@ -90,6 +90,17 @@ export const CATALOG: readonly CatalogEntry[] = [
     duration: "15 min",
     tags: ["Temps réel", "Coopératif ou versus", "Boucles temporelles"],
   },
+  {
+    status: "jouable",
+    id: "zero",
+    name: "Zéro",
+    tagline: "Le Skyjo des polynômes",
+    pitch:
+      "Comme au Skyjo, mais les cartes sont des polynômes. Une colonne compte le poids de la somme de ses cartes : range-les pour que leurs coefficients se compensent, jusqu'à l'annulation. Grille et degré au choix.",
+    players: "2 à 8",
+    duration: "20 min",
+    tags: ["Cartes", "Mathématiques", "Tour par tour"],
+  },
 ];
 
 export function playableGame(id: GameId): PlayableGame | undefined {

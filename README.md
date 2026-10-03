@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes`, `/echos` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes`, `/echos`, `/zero` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits**, **Cartographes** et **Échos** (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits**, **Cartographes**, **Échos** et **Zéro** (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -80,6 +80,17 @@ Temps réel, de 2 à 6 joueurs, en coopération ou en versus, vue de dessus.
 
 `ECHOS_ROUND_TICKS=200 npm start` raccourcit les manches à 10 s ; `ECHOS_AUTOCLEAR=40` franchit chaque salle au bout de 2 s, pour tester l'enchaînement des salles.
 
+## Zéro
+
+Le Skyjo des polynômes, de 2 à 8 joueurs, tour par tour.
+
+- Les cartes sont des polynômes à coefficients entiers, de degré au plus 0, 1, 2 ou 3 (au choix de l'hôte). Le paquet suit celui du Skyjo : quinze polynômes nuls, douze polynômes à coefficients positifs de poids 1 à 12 (dix fois chacun), et quelques négatives, des monômes : −2, −1, −x, −x²… Au degré 0, c'est presque exactement le Skyjo.
+- Le **poids** d'un polynôme est la somme des valeurs absolues de ses coefficients. Une colonne compte le poids de la **somme** de ses cartes : les coefficients se compensent avant d'être comptés (x² + 2 au-dessus de −x² ne coûte que 2).
+- Comme au Skyjo : chacun révèle deux cartes ; à son tour, on pioche au paquet ou à la défausse, puis on échange avec une carte de sa grille, ou (carte du paquet seulement) on la défausse et on retourne une carte cachée.
+- Une colonne entièrement révélée s'efface si ses cartes sont identiques, ou si elles **s'annulent** (somme nulle, avec au moins une carte non nulle) : bonus de −2 par carte.
+- Quand quelqu'un a tout révélé, chacun rejoue une fois ; celui qui a clos la manche double son score s'il n'est pas strictement le plus bas. La partie s'arrête quand quelqu'un atteint 50, 100 ou 150 points ; le plus bas gagne.
+- Grilles au choix : 2 × 3, 3 × 3, 3 × 4 (classique), 3 × 5, 4 × 4, 4 × 5. Les cartes cachées ne quittent jamais le serveur ; un joueur absent joue tout seul (il pioche, défausse et retourne).
+
 ## Sébastopol (`/station`)
 
 Hors jeu et hors salon : une station orbitale rétro-futuriste à explorer seul en vue subjective, hommage libre à l'esthétique d'*Alien: Isolation* (aucune ressource ni marque du jeu : tout est généré par le code). Three.js, page séparée (`client/station.html`).
@@ -127,6 +138,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
 | `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
 | `shared/games/echos.ts` | Salles, déplacements et collisions, plaques et portes, règles et messages d'Échos |
+| `shared/games/zero.ts` | Polynômes (somme, poids, écriture), paquet, colonnes et score de Zéro |
 | `server/index.ts` | HTTP (dont les balises d'aperçu de lien par page), API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
@@ -136,6 +148,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `server/games/puits/` | Tours de Puits (poses secrètes, résolution, scores) et ses tests |
 | `server/games/cartographes/` | Tours de Cartographes (information cachée, carte commune) et ses tests |
 | `server/games/echos/` | Simulation d'Échos (enregistrement, échos, paradoxe, versus) et ses tests |
+| `server/games/zero/` | Tours de Zéro (pioche, colonnes, dernier tour, doublement) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
@@ -145,6 +158,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `client/src/games/puits/` | Page, couverture, arène en canvas, aperçu des trajectoires, relecture des tours |
 | `client/src/games/cartographes/` | Page, couverture, pictogrammes, carte en SVG, carnet, journal |
 | `client/src/games/echos/` | Page, couverture, salle en canvas, prédiction, manette tactile |
+| `client/src/games/zero/` | Page, couverture, cartes polynômes, table, décompte |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |

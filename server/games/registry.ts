@@ -8,6 +8,7 @@ import { PuzzleGame } from "./puzzle/game.js";
 import { PuitsGame } from "./puits/game.js";
 import { CartoGame } from "./cartographes/game.js";
 import { EchoGame } from "./echos/game.js";
+import { ZeroGame } from "./zero/game.js";
 
 export const GAMES: Record<GameId, GameDefinition> = {
   rumeurs: { id: "rumeurs", create: (code, host) => new Rumeurs(code, () => host.changed()) },
@@ -16,6 +17,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   puits: { id: "puits", create: (code, host) => new PuitsGame(code, host) },
   cartographes: { id: "cartographes", create: (code, host) => new CartoGame(code, host) },
   echos: { id: "echos", create: (code, host) => new EchoGame(code, host) },
+  zero: { id: "zero", create: (code, host) => new ZeroGame(code, host) },
 };
 
 export function gameDefinition(id: unknown): GameDefinition | undefined {
