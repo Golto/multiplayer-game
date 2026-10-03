@@ -16,7 +16,6 @@ export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroA
   const standings = [...view.players].sort((a, b) => a.total - b.total);
   const worst = Math.max(1, ...standings.map((p) => p.total));
   const me = view.players.find((p) => p.id === view.you);
-  const cancels = (slot: number) => view.results.reduce((s, r) => s + (r.scores[slot]?.bonus ?? 0), 0);
   return (
     <div class="page final zero-final">
       <Watermark />
@@ -59,8 +58,7 @@ export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroA
                     <span class="bar-cash" style={{ width: `${Math.max(2, (p.total / worst) * 100)}%` }} />
                   </div>
                   <span class="muted small mono">
-                    {view.results.map((r) => r.scores[p.slot]?.score ?? 0).join(" · ")}
-                    {cancels(p.slot) ? ` · annulations ${cancels(p.slot)}` : ""}
+                    {view.results.map((r) => `${r.scores[p.slot]?.score ?? 0} (x=${r.x})`).join(" · ")}
                   </span>
                 </div>
               </li>

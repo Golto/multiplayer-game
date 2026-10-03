@@ -7,9 +7,11 @@ import {
   add,
   buildDeck,
   cardKinds,
-  columnFate,
-  columnScore,
+  columnClears,
   equals,
+  evaluate,
+  gridValue,
+  leadingTerm,
   format,
   isZero,
   neg,
@@ -55,13 +57,37 @@ describe("polynômes", () => {
     expect(equals([1, 2], [1, 2, 0])).toBe(true);
   });
 
-  it("une colonne compte le poids de sa somme : les coefficients se compensent", () => {
-    expect(columnScore([[2, 0, 1], [-1, 0, -1], [0, 3, 0]])).toBe(1 + 3);
-    expect(columnFate([[1, 2], [1, 2], [1, 2]])).toBe("identique");
-    expect(columnFate([[1, 2], [-3, 0], [2, -2]])).toBe("annulation");
-    expect(columnFate([[1, 2], [1, 2], [0, 1]])).toBeNull();
-    // Trois zéros : simplement identiques, pas de bonus.
-    expect(columnFate([[0], [0], [0]])).toBe("identique");
+  it("s'évaluent en x, et une colonne s'efface quand ses cartes ont le même terme dominant", () => {
+    const p: Poly = [3, -1, 2];
+    expect([-1, 0, 1].map((x) => evaluate(p, x))).toEqual([6, 3, 4]);
+    expect(leadingTerm(p)).toEqual([2, 2]);
+    expect(leadingTerm([0, 0, 0])).toBeNull();
+    expect(columnClears([[1, 0, 3], [0, -1, 3], [0, 0, 3]])).toBe(true);
+    expect(columnClears([[1, 0, 3], [0, -1, 2], [0, 0, 3]])).toBe(false);
+    expect(columnClears([[5, 1], [5, 1, 0], [0, 1]])).toBe(true);
+    expect(columnClears([[0], [0], [0]])).toBe(true);
+    expect(columnClears([[0], [0], [1]])).toBe(false);
+    expect(gridValue([[1, 1], [-2], [0, 0, 1]], -1)).toBe(0 + -2 + 1);
+  });
+});
+
+describe("degré 0", () => {
+  it("c'est exactement le Skyjo : les 150 cartes, des valeurs sans x, des colonnes de cartes identiques", () => {
+    const kinds = cardKinds(0, rng(1));
+    const count = new Map<number, number>();
+    for (const k of kinds) count.set(k.card[0]!, (count.get(k.card[0]!) ?? 0) + k.copies);
+    expect(Object.fromEntries(count)).toEqual({ "-2": 5, "-1": 10, "0": 15, ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => [i + 1, 10])) });
+    for (const k of kinds) expect(new Set([-1, 0, 1].map((x) => evaluate(k.card, x))).size).toBe(1);
+    expect(columnClears([[7], [7], [7]])).toBe(true);
+    expect(columnClears([[7], [7], [6]])).toBe(false);
+  });
+
+  it("à x = 1, chaque carte vaut sa valeur Skyjo, de −2 à 12", () => {
+    for (const degree of [1, 2, 3] as const) {
+      const values = cardKinds(degree, rng(degree)).map((k) => evaluate(k.card, 1));
+      expect(Math.min(...values)).toBe(-2);
+      expect(Math.max(...values)).toBe(12);
+    }
   });
 });
 
@@ -148,23 +174,36 @@ describe("manche", () => {
     expect(game.turn).toBe(first.slot);
   });
 
-  it("une colonne qui s'annule s'efface et rapporte un bonus ; une colonne identique s'efface", () => {
+  it("une colonne dont les cartes ont le même terme dominant s'efface", () => {
     const { game, ps } = setup(2);
     begin(game, ps);
     const me = ps.find((p) => p.slot === game.turn)!;
     const grid = game.grids.get(me.slot)!;
     const { cols } = game.config;
-    // Colonne 0 : P, −P, 0 ; les deux premières déjà visibles, la troisième arrive par la défausse.
-    const P: Poly = [1, 2, -1];
-    grid[0] = { card: P, up: true };
-    grid[cols] = { card: neg(P), up: true };
+    // Colonne 0 : 3x² + 1 et 3x² − x déjà visibles ; 3x² arrive par la défausse.
+    grid[0] = { card: [1, 0, 3], up: true };
+    grid[cols] = { card: [0, -1, 3], up: true };
     grid[2 * cols] = { card: [5, 0, 0], up: false };
-    game.discard.push([0, 0, 0]);
+    game.discard.push([0, 0, 3]);
     game.handle(me.id, { t: "draw", from: "discard" });
     game.handle(me.id, { t: "swap", index: 2 * cols });
     expect([0, cols, 2 * cols].every((i) => grid[i]!.card === null)).toBe(true);
-    expect(game.bonus.get(me.slot)).toBe(RULES.cancelBonus * 3);
-    expect(game.lastEvent).toMatchObject({ k: "column", fate: "annulation" });
+    expect(game.lastEvent).toMatchObject({ k: "column", col: 0 });
+  });
+
+  it("le dé tire x, et chaque carte vaut P(x)", () => {
+    const { game, ps } = setup(2);
+    begin(game, ps);
+    const cols = game.config.cols;
+    for (const p of ps) {
+      // x sur toute la première ligne, 1 partout ailleurs (constantes différentes par colonne pour éviter les effacements).
+      game.grids.get(p.slot)!.forEach((c, i) => (c.card = i < cols ? [0, 1, 0] : [1 + (i % cols), 0, 0]));
+    }
+    game.endRound(-1);
+    const r = game.results[0]!;
+    expect(r.x).toBe(-1);
+    const expected = cols * -1 + [...Array(2 * cols)].reduce((s, _, k) => s + 1 + (k % cols), 0);
+    expect(r.scores[ps[0]!.slot]!.cards).toBe(expected);
   });
 
   it("quand quelqu'un a tout révélé, les autres jouent une dernière fois, puis on compte", () => {
@@ -200,7 +239,7 @@ describe("manche", () => {
     // Le clôtureur a une main lourde, l'autre une main nulle.
     const heavy = game.grids.get(closer.slot)!;
     heavy.forEach((c, i) => {
-      // Lignes 1, 2, 3 : chaque colonne pèse 6, et aucune ne s'efface.
+      // Lignes 1, 2, 3 : chaque colonne vaut 6, et aucune ne s'efface.
       c.card = [1 + Math.floor(i / cols), 0, 0];
       c.up = i !== 11;
     });
@@ -213,7 +252,7 @@ describe("manche", () => {
     game.handle(other.id, { t: "reveal", index: game.grids.get(other.slot)!.findIndex((c) => !c.up) });
     const s = game.results[0]!.scores;
     expect(s[closer.slot]!.doubled).toBe(true);
-    expect(s[closer.slot]!.score).toBe(s[closer.slot]!.columns * 2);
+    expect(s[closer.slot]!.score).toBe(s[closer.slot]!.cards * 2);
     expect(s[other.slot]!.doubled).toBe(false);
   });
 

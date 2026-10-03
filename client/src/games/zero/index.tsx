@@ -5,7 +5,7 @@ import { DEGREES, GRIDS, RULES, TARGETS, cardKinds, rng, type ZeroAction, type Z
 import { RoomLobby } from "../../ui/RoomLobby";
 import type { GameClient, RoomProps } from "../types";
 import { Board } from "./Board";
-import { ZCard } from "./cards";
+import { Sized, ZCard } from "./cards";
 import { Final } from "./Final";
 import { Cover, Home } from "./Home";
 import "./zero.css";
@@ -23,7 +23,9 @@ function Config({ view, send }: { view: ZeroView; send: (a: ZeroAction) => void 
       <h2 class="h5">La partie</h2>
       <div class="config-samples" aria-label="Exemples de cartes">
         {samples.map((p) => (
-          <ZCard cell={{ card: p, up: true, removed: false }} size="md" />
+          <Sized width={78}>
+            <ZCard cell={{ card: p, up: true, removed: false }} />
+          </Sized>
         ))}
       </div>
       <fieldset class="chip-group" disabled={!host}>
@@ -63,7 +65,10 @@ function Config({ view, send }: { view: ZeroView; send: (a: ZeroAction) => void 
           </button>
         ))}
       </fieldset>
-      <p class="muted small">{host ? "Tu règles, tout le monde joue." : "L'hôte règle la partie."} Au degré 0, c'est presque un Skyjo classique.</p>
+      <p class="muted small">
+        {host ? "Tu règles, tout le monde joue." : "L'hôte règle la partie."} Au degré 0, c'est exactement le Skyjo. Avec la grille 2 × 3, vise
+        plutôt 50 points.
+      </p>
     </div>
   );
 }

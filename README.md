@@ -82,14 +82,15 @@ Temps réel, de 2 à 6 joueurs, en coopération ou en versus, vue de dessus.
 
 ## Zéro
 
-Le Skyjo des polynômes, de 2 à 8 joueurs, tour par tour.
+Le Skyjo des polynômes, de 2 à 8 joueurs, tour par tour. Au degré 0, c'est exactement le Skyjo.
 
-- Les cartes sont des polynômes à coefficients entiers, de degré au plus 0, 1, 2 ou 3 (au choix de l'hôte). Le paquet suit celui du Skyjo : quinze polynômes nuls, douze polynômes à coefficients positifs de poids 1 à 12 (dix fois chacun), et quelques négatives, des monômes : −2, −1, −x, −x²… Au degré 0, c'est presque exactement le Skyjo.
-- Le **poids** d'un polynôme est la somme des valeurs absolues de ses coefficients. Une colonne compte le poids de la **somme** de ses cartes : les coefficients se compensent avant d'être comptés (x² + 2 au-dessus de −x² ne coûte que 2).
+- Les cartes sont des polynômes à coefficients entiers, de degré au plus 0, 1, 2 ou 3 (au choix de l'hôte). Le paquet suit celui du Skyjo : quinze polynômes nuls, douze polynômes à coefficients positifs valant 1 à 12 en x = 1 (dix fois chacun), et des négatives, des monômes : −2 (cinq fois), −1 (dix fois), −x, −x², … (cinq fois chacun).
 - Comme au Skyjo : chacun révèle deux cartes ; à son tour, on pioche au paquet ou à la défausse, puis on échange avec une carte de sa grille, ou (carte du paquet seulement) on la défausse et on retourne une carte cachée.
-- Une colonne entièrement révélée s'efface si ses cartes sont identiques, ou si elles **s'annulent** (somme nulle, avec au moins une carte non nulle) : bonus de −2 par carte.
-- Quand quelqu'un a tout révélé, chacun rejoue une fois ; celui qui a clos la manche double son score s'il n'est pas strictement le plus bas. La partie s'arrête quand quelqu'un atteint 50, 100 ou 150 points ; le plus bas gagne.
-- Grilles au choix : 2 × 3, 3 × 3, 3 × 4 (classique), 3 × 5, 4 × 4, 4 × 5. Les cartes cachées ne quittent jamais le serveur ; un joueur absent joue tout seul (il pioche, défausse et retourne).
+- **Score** : à la fin de la manche, un dé tire x parmi −1, 0 et 1, et chaque carte vaut P(x). En x = 1, chaque carte vaut sa valeur Skyjo ; en x = 0, seule sa constante compte ; en x = −1, les termes de degré impair changent de signe. Chaque carte affiche sa valeur en x = 1 et ses trois valeurs possibles ; le panneau de droite donne ce que vaut sa grille pour chaque tirage.
+- **Colonnes** : une colonne entièrement révélée s'efface quand ses cartes ont le même terme dominant (3x² + 1, 3x² − x, 3x²). Au degré 0, ce sont des cartes identiques.
+- Quand quelqu'un a tout révélé, chacun rejoue une fois ; celui qui a clos la manche double son score s'il n'est pas strictement le plus bas. La partie s'arrête à 50, 100 ou 150 points ; le plus bas gagne.
+- Grilles au choix : 2 × 3, 3 × 3, 3 × 4 (classique), 3 × 5, 4 × 4, 4 × 5. La table tient sur un seul écran : la taille des cartes se calcule d'après la fenêtre, la grille et le nombre de joueurs.
+- Les cartes cachées ne quittent jamais le serveur ; un joueur absent joue tout seul.
 
 ## Sébastopol (`/station`)
 
@@ -138,7 +139,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/puits.ts` | Simulation déterministe, règles et messages de Puits |
 | `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
 | `shared/games/echos.ts` | Salles, déplacements et collisions, plaques et portes, règles et messages d'Échos |
-| `shared/games/zero.ts` | Polynômes (somme, poids, écriture), paquet, colonnes et score de Zéro |
+| `shared/games/zero.ts` | Polynômes (évaluation, terme dominant, écriture), paquet, colonnes et score de Zéro |
 | `server/index.ts` | HTTP (dont les balises d'aperçu de lien par page), API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
