@@ -16,7 +16,7 @@ import {
   isZero,
   neg,
   rng,
-  rollX,
+  drawX,
   SKYJO_COUNTS,
   weight,
   type Poly,
@@ -93,20 +93,29 @@ describe("degré 0", () => {
   });
 });
 
-describe("dé", () => {
-  it("tire −1, 0 et 1 à parts égales", () => {
+describe("tirage de x", () => {
+  it("sort d'un sac : −1, 0 et 1 une fois toutes les trois manches, dans un ordre variable", () => {
     for (const r of [rng(3), Math.random]) {
-      const counts = new Map<number, number>();
-      for (let i = 0; i < 30000; i++) {
-        const x = rollX(r);
-        counts.set(x, (counts.get(x) ?? 0) + 1);
+      const bag: number[] = [];
+      const orders = new Set<string>();
+      for (let cycle = 0; cycle < 200; cycle++) {
+        const three = [drawX(bag, r), drawX(bag, r), drawX(bag, r)];
+        expect([...three].sort()).toEqual([-1, 0, 1]);
+        orders.add(three.join(","));
       }
-      expect([...counts.keys()].sort()).toEqual([-1, 0, 1]);
-      for (const n of counts.values()) expect(Math.abs(n - 10000)).toBeLessThan(500);
+      expect(orders.size).toBe(6);
     }
-    // Même un tirage au ras de 1 reste dans le dé.
-    expect(rollX(() => 0.999999999)).toBe(1);
-    expect(rollX(() => 0)).toBe(-1);
+  });
+
+  it("montre ce qui reste dans le sac", () => {
+    const game = new ZeroGame("Z", { changed: () => {}, emit: () => {} }, seeded(), false);
+    const a = game.addPlayer("A");
+    game.addPlayer("B");
+    game.handle(a.id, { t: "start" });
+    expect(game.view(a.id).xLeft).toEqual([-1, 0, 1]);
+    game.endRound();
+    const first = game.results[0]!.x;
+    expect(game.view(a.id).xLeft).toEqual([-1, 0, 1].filter((x) => x !== first));
   });
 });
 
@@ -215,7 +224,7 @@ describe("manche", () => {
     expect(game.lastEvent).toMatchObject({ k: "column", col: 0 });
   });
 
-  it("le dé tire x, et chaque carte vaut P(x)", () => {
+  it("x sort du sac, et chaque carte vaut P(x)", () => {
     const { game, ps } = setup(2);
     begin(game, ps);
     const cols = game.config.cols;

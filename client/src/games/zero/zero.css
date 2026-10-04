@@ -67,10 +67,9 @@ button.zcard {
   text-align: center;
   font-weight: 600;
   line-height: 1.15;
-  text-wrap: balance;
-  max-width: 100%;
+  white-space: nowrap;
 }
-/* Les termes ne se coupent jamais ; les longs polynômes passent sur deux lignes entre deux termes. */
+/* Toujours sur une ligne : la police se réduit si le polynôme est trop long pour la carte. */
 .zcard-poly.fit-xl {
   font-size: calc(34cqw * var(--shrink, 1));
 }

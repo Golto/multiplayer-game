@@ -13,7 +13,8 @@ import {
   columnClears,
   evaluate,
   gridValue,
-  rollX,
+  drawX,
+  xLeft,
   type Cell,
   type Degree,
   type Phase,
@@ -62,6 +63,8 @@ export class ZeroGame implements GameRoom {
   /** Celui qui ouvre la manche suivante (celui qui a clos la précédente). */
   nextStarter: number | null = null;
   results: RoundResult[] = [];
+  /** Le sac d'où sort x : chaque valeur une fois toutes les trois manches. */
+  xBag: number[] = [];
   lastEvent: ZeroEvent | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -200,6 +203,7 @@ export class ZeroGame implements GameRoom {
     this.players = connected;
     for (const p of this.players) p.total = 0;
     this.results = [];
+    this.xBag = [];
     this.round = 0;
     this.nextStarter = null;
     this.beginRound();
@@ -403,8 +407,8 @@ export class ZeroGame implements GameRoom {
 
   // ------------------------------------------------------------ fin de manche
 
-  /** Tout le monde révèle, le dé tire x, chaque carte vaut P(x). */
-  endRound(x: number = rollX(this.rng)): void {
+  /** Tout le monde révèle, x sort du sac, chaque carte vaut P(x). */
+  endRound(x: number = drawX(this.xBag, this.rng)): void {
     this.dispose();
     const scores: Record<number, RoundScore> = {};
     for (const p of this.players) {
@@ -512,6 +516,7 @@ export class ZeroGame implements GameRoom {
       handFrom: this.handFrom,
       closer: this.closer,
       results: this.results,
+      xLeft: xLeft(this.xBag),
       lastEvent: this.lastEvent,
     };
   }

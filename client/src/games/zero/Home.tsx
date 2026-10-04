@@ -54,7 +54,7 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
             Zéro<span class="hero-dot">.</span>
           </h1>
           <p class="hero-lead">
-            Le Skyjo des polynômes : les cartes sont des polynômes à coefficients entiers. À la fin de la manche, un dé tire x parmi −1, 0 et 1, et
+            Le Skyjo des polynômes : les cartes sont des polynômes à coefficients entiers. À la fin de la manche, x sort d'un sac contenant −1, 0 et 1, et
             chaque carte vaut P(x). Au degré 0, c'est exactement le Skyjo.
           </p>
           <div class="zero-hero-art">
@@ -80,9 +80,9 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
           </li>
           <li>
             <span class="how-num">02</span>
-            <h3 class="h6">Le dé de x</h3>
+            <h3 class="h6">Le sac de x</h3>
             <p>
-              À la fin de la manche, x vaut −1, 0 ou 1, et chaque carte vaut P(x) : <PolyText p={[3, -1, 2]} /> vaut 6, 3 ou 4. En x = 1, chaque
+              À la fin de la manche, x sort d'un sac : −1, 0 et 1 sortent chacun une fois toutes les trois manches. Chaque carte vaut P(x) : <PolyText p={[3, -1, 2]} /> vaut 6, 3 ou 4. En x = 1, chaque
               carte vaut sa valeur Skyjo, de −2 à 12.
             </p>
           </li>

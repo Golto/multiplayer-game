@@ -13,8 +13,6 @@ export function PolyText({ p, class: cls, ref }: { p: Poly; class?: string; ref?
     if (!c) continue;
     const abs = Math.abs(c);
     const first = parts.length === 0;
-    // Une coupure possible avant chaque terme : les longs polynômes passent sur deux lignes.
-    if (!first) parts.push(<wbr />);
     parts.push(
       <span class="term">
         {first ? (c < 0 ? "−" : "") : <span class="op">{c < 0 ? "−" : "+"}</span>}
@@ -63,7 +61,7 @@ export function ZCard({ cell, onClick, hint, fresh, label, small }: CardProps) {
 }
 
 /**
- * Rétrécit l'écriture si elle déborde encore de la carte (polices plus larges, cartes étroites) :
+ * Le polynôme tient sur une ligne : s'il déborde de la carte (polices plus larges, cartes étroites),
  * on mesure, puis on réduit la police d'autant, et on recommence quand la carte change de taille.
  */
 function useShrinkToFit(text: string, room: number) {

@@ -96,7 +96,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Zéro",
     tagline: "Le Skyjo des polynômes",
     pitch:
-      "Comme au Skyjo, mais les cartes sont des polynômes. À la fin de la manche, un dé tire x parmi −1, 0 et 1, et chaque carte vaut P(x). Une colonne s'efface quand ses cartes ont le même terme dominant. Grille et degré au choix.",
+      "Comme au Skyjo, mais les cartes sont des polynômes. À la fin de la manche, x sort d'un sac contenant −1, 0 et 1, et chaque carte vaut P(x). Une colonne s'efface quand ses cartes ont le même terme dominant. Grille et degré au choix.",
     players: "2 à 8",
     duration: "20 min",
     tags: ["Cartes", "Mathématiques", "Tour par tour"],
