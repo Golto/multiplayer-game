@@ -67,26 +67,28 @@ button.zcard {
   text-align: center;
   font-weight: 600;
   line-height: 1.15;
+  text-wrap: balance;
+  max-width: 100%;
 }
 /* Les termes ne se coupent jamais ; les longs polynômes passent sur deux lignes entre deux termes. */
 .zcard-poly.fit-xl {
-  font-size: 34cqw;
+  font-size: calc(34cqw * var(--shrink, 1));
 }
 .zcard-poly.fit-lg {
-  font-size: 22cqw;
+  font-size: calc(22cqw * var(--shrink, 1));
 }
 .zcard-poly.fit-md {
-  font-size: 18cqw;
+  font-size: calc(18cqw * var(--shrink, 1));
 }
 .zcard-poly.fit-sm {
-  font-size: 15cqw;
+  font-size: calc(15cqw * var(--shrink, 1));
 }
 .is-small .zcard-poly {
   padding: 0 4%;
 }
 .is-small .zcard-poly.fit-md,
 .is-small .zcard-poly.fit-sm {
-  font-size: 17cqw;
+  font-size: calc(17cqw * var(--shrink, 1));
 }
 .is-small .zcard-corner {
   display: none;
@@ -546,7 +548,14 @@ button.zcard.is-flip:hover {
   text-align: right;
   color: var(--foreground-muted);
 }
+.zero-bar {
+  position: relative;
+}
 .zero-bar .bar-cash {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
   background: var(--c);
 }
 
@@ -654,4 +663,21 @@ button.zcard.is-flip:hover {
   .zero-round-list li {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Un total négatif part de l'axe zéro vers la gauche ; l'axe est marqué d'un trait. */
+.zero-bar .bar-cash.is-neg {
+  transform-origin: right;
+}
+.zero-bar.has-axis::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: var(--axis);
+  width: 2px;
+  background: var(--foreground-muted);
+}
+.zero-bar.has-axis {
+  overflow: visible;
 }

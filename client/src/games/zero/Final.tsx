@@ -7,6 +7,9 @@ import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { Icon } from "../../ui/icons";
 import { play } from "../../sound/engine";
 
+/** Les nombres négatifs avec un vrai signe moins. */
+const minus = (n: number) => (n < 0 ? `−${-n}` : String(n));
+
 export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroAction) => void; onLeave: () => void }) {
   useEffect(() => {
     play("feedback.complete");
@@ -14,7 +17,10 @@ export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroA
     return () => clearTimeout(id);
   }, []);
   const standings = [...view.players].sort((a, b) => a.total - b.total);
-  const worst = Math.max(1, ...standings.map((p) => p.total));
+  // Barres partant d'un axe zéro : vers la droite pour un total positif, vers la gauche s'il est négatif.
+  const lo = Math.min(0, ...standings.map((p) => p.total));
+  const hi = Math.max(1, ...standings.map((p) => p.total));
+  const axis = (-lo / (hi - lo)) * 100;
   const me = view.players.find((p) => p.id === view.you);
   return (
     <div class="page final zero-final">
@@ -37,7 +43,7 @@ export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroA
             <span class="hero-dot">.</span>
           </h1>
           <p class="hero-lead">
-            l'emporte avec <strong class="mono">{standings[0]?.total} points</strong>, le total le plus léger.
+            l'emporte avec <strong class="mono">{minus(standings[0]?.total ?? 0)} points</strong>, le total le plus léger.
           </p>
         </section>
         <section class="panel standings" aria-labelledby="standings-title">
@@ -52,13 +58,19 @@ export function Final({ view, send, onLeave }: { view: ZeroView; send: (a: ZeroA
                 <div class="standing-body">
                   <div class="standing-top">
                     <span class="standing-name">{p.name}</span>
-                    <span class="standing-total mono">{p.total} pts</span>
+                    <span class="standing-total mono">{minus(p.total)} pts</span>
                   </div>
-                  <div class="standing-bar zero-bar" aria-hidden="true">
-                    <span class="bar-cash" style={{ width: `${Math.max(2, (p.total / worst) * 100)}%` }} />
+                  <div class={`standing-bar zero-bar ${lo < 0 ? "has-axis" : ""}`} style={{ "--axis": `${axis}%` } as never} aria-hidden="true">
+                    <span
+                      class={`bar-cash ${p.total < 0 ? "is-neg" : ""}`}
+                      style={{
+                        left: `${p.total < 0 ? axis + (p.total / (hi - lo)) * 100 : axis}%`,
+                        width: `${Math.max(1, (Math.abs(p.total) / (hi - lo)) * 100)}%`,
+                      }}
+                    />
                   </div>
                   <span class="muted small mono">
-                    {view.results.map((r) => `${r.scores[p.slot]?.score ?? 0} (x=${r.x})`).join(" · ")}
+                    {view.results.map((r) => `${minus(r.scores[p.slot]?.score ?? 0)} (x = ${minus(r.x)})`).join(" · ")}
                   </span>
                 </div>
               </li>

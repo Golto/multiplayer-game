@@ -1,18 +1,20 @@
 // Cartes de Zéro : un polynôme bien typographié, la couleur de sa valeur Skyjo (en x = 1 : bleu
 // pour les négatives, puis vert, jaune, rouge), ses trois valeurs possibles, un dos guilloché.
 
-import { useMemo } from "preact/hooks";
+import { useLayoutEffect, useMemo, useRef } from "preact/hooks";
 import { RULES, columnCells, evaluate, format, leadingTerm, type Poly, type PublicCell } from "../../../../shared/games/zero";
 import { hypotrochoid } from "../../ui/art";
 
 /** Le polynôme écrit comme en maths : x en italique, exposants en hauteur, vrais signes moins. */
-export function PolyText({ p, class: cls }: { p: Poly; class?: string }) {
+export function PolyText({ p, class: cls, ref }: { p: Poly; class?: string; ref?: preact.Ref<HTMLSpanElement> }) {
   const parts: preact.JSX.Element[] = [];
   for (let i = p.length - 1; i >= 0; i--) {
     const c = p[i]!;
     if (!c) continue;
     const abs = Math.abs(c);
     const first = parts.length === 0;
+    // Une coupure possible avant chaque terme : les longs polynômes passent sur deux lignes.
+    if (!first) parts.push(<wbr />);
     parts.push(
       <span class="term">
         {first ? (c < 0 ? "−" : "") : <span class="op">{c < 0 ? "−" : "+"}</span>}
@@ -22,7 +24,7 @@ export function PolyText({ p, class: cls }: { p: Poly; class?: string }) {
       </span>,
     );
   }
-  return <span class={`poly ${cls ?? ""}`}>{parts.length ? parts : <span class="term">0</span>}</span>;
+  return <span ref={ref} class={`poly ${cls ?? ""}`}>{parts.length ? parts : <span class="term">0</span>}</span>;
 }
 
 const minus = (n: number) => (n < 0 ? `−${-n}` : String(n));
@@ -60,16 +62,46 @@ export function ZCard({ cell, onClick, hint, fresh, label, small }: CardProps) {
   );
 }
 
+/**
+ * Rétrécit l'écriture si elle déborde encore de la carte (polices plus larges, cartes étroites) :
+ * on mesure, puis on réduit la police d'autant, et on recommence quand la carte change de taille.
+ */
+function useShrinkToFit(text: string, room: number) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const card = el?.parentElement;
+    if (!el || !card) return;
+    const fit = () => {
+      let shrink = 1;
+      el.style.setProperty("--shrink", "1");
+      for (let i = 0; i < 4; i++) {
+        const s = Math.min(card.clientWidth / el.scrollWidth, (card.clientHeight * room) / el.scrollHeight);
+        if (!(s < 1)) break;
+        shrink = Math.max(0.35, shrink * s * 0.97);
+        el.style.setProperty("--shrink", shrink.toFixed(3));
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(card);
+    document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, [text, room]);
+  return ref;
+}
+
 function CardFace({ p, small }: { p: Poly; small?: boolean }) {
   const text = format(p);
   // Plus l'écriture est longue, plus la police se resserre.
   const fit = text.length <= 3 ? "fit-xl" : text.length <= 7 ? "fit-lg" : text.length <= 12 ? "fit-md" : "fit-sm";
   const values = RULES.xValues.map((x) => evaluate(p, x));
   const constant = values.every((v) => v === values[0]);
+  const ref = useShrinkToFit(text, small ? 0.9 : 0.58);
   return (
     <span class="zcard-face">
       <span class="zcard-corner mono">{minus(evaluate(p, 1))}</span>
-      <PolyText p={p} class={`zcard-poly ${fit}`} />
+      <PolyText p={p} class={`zcard-poly ${fit}`} ref={ref} />
       {!small && !constant && (
         <span class="zcard-values mono" title="Valeur si x = −1, 0, 1">
           {values.map((v) => minus(v)).join(" · ")}

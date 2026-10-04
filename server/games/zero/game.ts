@@ -13,6 +13,7 @@ import {
   columnClears,
   evaluate,
   gridValue,
+  rollX,
   type Cell,
   type Degree,
   type Phase,
@@ -403,7 +404,7 @@ export class ZeroGame implements GameRoom {
   // ------------------------------------------------------------ fin de manche
 
   /** Tout le monde révèle, le dé tire x, chaque carte vaut P(x). */
-  endRound(x: number = RULES.xValues[Math.floor(this.rng() * RULES.xValues.length)]!): void {
+  endRound(x: number = rollX(this.rng)): void {
     this.dispose();
     const scores: Record<number, RoundScore> = {};
     for (const p of this.players) {

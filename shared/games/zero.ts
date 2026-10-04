@@ -217,6 +217,11 @@ export function columnCells(cols: number, rows: number, c: number): number[] {
   return Array.from({ length: rows }, (_, r) => r * cols + c);
 }
 
+/** Le dé de fin de manche : −1, 0 ou 1, chacun avec une chance sur trois. */
+export function rollX(r: () => number): number {
+  return RULES.xValues[Math.min(RULES.xValues.length - 1, Math.floor(r() * RULES.xValues.length))]!;
+}
+
 /** Valeur d'un polynôme en x. */
 export function evaluate(p: Poly, x: number): number {
   return p.reduce((s, c, i) => s + c * x ** i, 0);

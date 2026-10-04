@@ -16,6 +16,7 @@ import {
   isZero,
   neg,
   rng,
+  rollX,
   SKYJO_COUNTS,
   weight,
   type Poly,
@@ -89,6 +90,23 @@ describe("degré 0", () => {
       expect(Math.min(...values)).toBe(-2);
       expect(Math.max(...values)).toBe(12);
     }
+  });
+});
+
+describe("dé", () => {
+  it("tire −1, 0 et 1 à parts égales", () => {
+    for (const r of [rng(3), Math.random]) {
+      const counts = new Map<number, number>();
+      for (let i = 0; i < 30000; i++) {
+        const x = rollX(r);
+        counts.set(x, (counts.get(x) ?? 0) + 1);
+      }
+      expect([...counts.keys()].sort()).toEqual([-1, 0, 1]);
+      for (const n of counts.values()) expect(Math.abs(n - 10000)).toBeLessThan(500);
+    }
+    // Même un tirage au ras de 1 reste dans le dé.
+    expect(rollX(() => 0.999999999)).toBe(1);
+    expect(rollX(() => 0)).toBe(-1);
   });
 });
 
