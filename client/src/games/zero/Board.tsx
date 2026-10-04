@@ -8,7 +8,7 @@ import { PlayerSeal, accentVar } from "../../ui/art";
 import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { Icon } from "../../ui/icons";
 import { play } from "../../sound/engine";
-import { Grid, Sized, ZCard } from "./cards";
+import { CardPeek, Grid, Sized, ZCard } from "./cards";
 
 interface Props {
   view: ZeroView;
@@ -243,7 +243,7 @@ export function Board({ view, send, onLeave }: Props) {
               <span class="opp-name">Ta grille</span>
               <span class="mono opp-total">{me?.total ?? 0} pts</span>
             </header>
-            <Grid cells={myCells} rows={rows} cols={cols} width={size.my} onCell={onCell} hint={hint} fresh={fresh(mySlot)} showLeads />
+            <Grid cells={myCells} rows={rows} cols={cols} width={size.my} onCell={onCell} hint={hint} fresh={fresh(mySlot)} showLeads peek={size.my < 58} />
           </section>
         </section>
 
@@ -288,6 +288,7 @@ export function Board({ view, send, onLeave }: Props) {
         </aside>
       </main>
 
+      <CardPeek />
       {view.phase === "reveal" && <RoundEnd view={view} send={send} width={Math.min(40, size.opp)} />}
     </div>
   );
