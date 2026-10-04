@@ -1,0 +1,769 @@
+/* Tapis : cartes à jouer, jetons, tapis ovale, places, paroles. */
+
+/* ---------------------------------------------------------------- cartes */
+
+.pcard {
+  --w: 60px;
+  --red: #c42a3a;
+  --black: #1d1b22;
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  padding: 0;
+  border: 0;
+  border-radius: 9% / 6.4%;
+  background: none;
+  font: inherit;
+  container-type: inline-size;
+  transition:
+    transform 0.2s ease-out,
+    opacity 0.25s,
+    filter 0.25s,
+    box-shadow 0.2s;
+}
+button.pcard {
+  cursor: pointer;
+}
+.pc-face,
+.pc-back {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+/* Les faces restent claires, comme de vraies cartes, quel que soit le thème. */
+.pc-face {
+  background: linear-gradient(170deg, #fffefb, #f4f0e6);
+  border: 1px solid rgba(20, 16, 10, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  color: var(--black);
+  font-family: var(--font-sans);
+}
+.pcard.is-red .pc-face {
+  color: var(--red);
+}
+.pc-corner {
+  position: absolute;
+  top: 5%;
+  left: 8%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.95;
+}
+.pc-corner b {
+  font-size: 24cqw;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.pc-corner i {
+  font-style: normal;
+  font-size: 20cqw;
+}
+.pc-corner.is-bottom {
+  top: auto;
+  left: auto;
+  bottom: 5%;
+  right: 8%;
+  transform: rotate(180deg);
+}
+.pc-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 50cqw;
+  line-height: 1;
+}
+.pc-center.is-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.pc-center.is-figure b {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 44cqw;
+  font-weight: 700;
+}
+.pc-center.is-figure i {
+  font-style: normal;
+  font-size: 22cqw;
+}
+/* Petite carte : un coin lisible, le symbole plus bas. */
+@container (max-width: 46px) {
+  .pc-corner b {
+    font-size: 34cqw;
+  }
+  .pc-corner i {
+    font-size: 28cqw;
+  }
+  .pc-center {
+    inset: 38% 0 0 30%;
+    font-size: 54cqw;
+  }
+  .pc-center.is-figure b {
+    font-size: 40cqw;
+  }
+  .pc-center.is-figure i {
+    display: none;
+  }
+}
+/* La folle : liseré doré et étoile. */
+.pcard.is-wild .pc-face {
+  border-color: #c99a1c;
+  box-shadow:
+    inset 0 0 0 2px #e6b52b,
+    0 0 10px rgba(230, 181, 43, 0.55);
+}
+.pc-wild {
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  display: grid;
+  place-items: center;
+  width: 26cqw;
+  height: 26cqw;
+  border-radius: 50%;
+  background: #e6b52b;
+  color: #fff;
+  font-size: 17cqw;
+  line-height: 1;
+}
+.pcard.is-win {
+  transform: translateY(-7%);
+}
+.pcard.is-win .pc-face {
+  box-shadow:
+    0 0 0 3px var(--success),
+    0 6px 16px rgba(0, 0, 0, 0.25);
+}
+.pcard.is-pick .pc-face {
+  box-shadow: 0 0 0 3px var(--primary);
+  animation: pick-pulse 1.1s ease-in-out infinite;
+}
+.pcard.is-pick:hover {
+  transform: translateY(-6%);
+}
+@keyframes pick-pulse {
+  50% {
+    box-shadow: 0 0 0 5px hsl(from var(--primary) h s l / 0.45);
+  }
+}
+.pcard.is-dim {
+  opacity: 0.45;
+  filter: saturate(0.4);
+}
+.pcard.is-fresh {
+  animation: deal 0.35s ease-out backwards;
+}
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) rotate(-6deg) scale(0.85);
+  }
+}
+.pc-back {
+  background: radial-gradient(circle at 50% 45%, #3a3170, #241d4d 70%);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.pc-back svg {
+  width: 100%;
+  height: 100%;
+}
+.back-frame {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 1.4;
+}
+.back-rosette {
+  fill: none;
+  stroke: rgba(255, 214, 140, 0.55);
+  stroke-width: 0.6;
+}
+
+/* ---------------------------------------------------------------- jetons */
+
+.chips {
+  --chip: var(--primary);
+  display: inline-flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  vertical-align: middle;
+}
+.chips i {
+  display: block;
+  width: 20px;
+  height: 7px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--chip);
+  border: 1.5px dashed rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 1.5px 0 color-mix(in srgb, var(--chip) 60%, black),
+    0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------------------------------------------------------------- couverture */
+
+.tapis-cover {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.tc-fan {
+  position: relative;
+  width: 160px;
+  height: 118px;
+}
+.tc-fan .pcard {
+  position: absolute;
+  top: 8px;
+  transition: transform 0.4s ease-out;
+}
+.tc-fan .pcard:nth-child(1) {
+  left: 0;
+  transform: rotate(-13deg);
+}
+.tc-fan .pcard:nth-child(2) {
+  left: 42px;
+  top: 0;
+  transform: rotate(-1deg);
+}
+.tc-fan .pcard:nth-child(3) {
+  left: 84px;
+  transform: rotate(12deg);
+}
+.game-box.is-playable:hover .tc-fan .pcard:nth-child(1) {
+  transform: rotate(-20deg) translateX(-6px);
+}
+.game-box.is-playable:hover .tc-fan .pcard:nth-child(3) {
+  transform: rotate(19deg) translateX(6px);
+}
+.tc-chips {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+.tapis-hero-art {
+  margin-top: var(--space-6);
+}
+
+/* ---------------------------------------------------------------- salon */
+
+.tapis-config {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.tapis-twists {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.tapis-twists legend {
+  margin-bottom: var(--space-1-5);
+  padding: 0;
+}
+.tapis-twist {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--background-raised);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.tapis-twist > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.tapis-twist.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, var(--background-raised));
+}
+.tapis-twist:disabled {
+  cursor: default;
+}
+.tapis-twist-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tapis-twist.is-active .tapis-twist-check {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- table */
+
+.tapis-board {
+  min-height: 100dvh;
+}
+.tapis-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5) var(--space-5);
+  align-items: start;
+}
+.tapis-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.tapis-table {
+  position: relative;
+  margin: 60px auto 56px;
+  max-width: 100%;
+}
+/* Le tapis : feutre vert, bord de bois. */
+.felt {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.1), transparent 60%),
+    radial-gradient(ellipse at center, #2b7553, #1d5a3f 62%, #154330);
+  border: 14px solid #5b3b24;
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.25),
+    inset 0 10px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 2px #3e2716,
+    0 18px 40px rgba(0, 0, 0, 0.28);
+}
+.dark .felt {
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.06), transparent 60%),
+    radial-gradient(ellipse at center, #1f5d42, #164532 62%, #0f3123);
+  border-color: #4a301e;
+}
+.table-center {
+  position: absolute;
+  inset: 16% 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  z-index: 1;
+  color: #f6f1e4;
+}
+.twists {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.twist-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 4px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  line-height: 18px;
+  cursor: help;
+}
+.twist-badge.is-bounty {
+  padding-left: 10px;
+}
+.bounty-star {
+  color: #f0c24b;
+}
+.twist-badge.is-won {
+  background: #c99a1c;
+  color: #fff;
+  animation: pop 0.4s ease-out;
+}
+.twist-badge.is-won .bounty-star {
+  color: #fff;
+}
+.tboard {
+  display: flex;
+  gap: 6px;
+}
+.tboard-slot {
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: 9% / 6.4%;
+  border: 1.5px dashed rgba(255, 255, 255, 0.22);
+}
+.tpot .muted {
+  color: rgba(246, 241, 228, 0.7);
+}
+.tpot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 14px 4px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 14px;
+}
+.result-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--background-raised);
+  color: var(--foreground);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: pop 0.3s ease-out;
+}
+.result-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.result-line.is-bounty {
+  color: #a87c0d;
+  font-weight: 600;
+}
+.dark .result-line.is-bounty {
+  color: #f0c24b;
+}
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1-5);
+}
+
+/* ---------------------------------------------------------------- places */
+
+.tseat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+.tseat-cards {
+  display: flex;
+  gap: 3px;
+  margin-bottom: -10px;
+  z-index: 0;
+}
+.tseat-plate {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 128px;
+  padding: 3px 12px 3px 3px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  background: var(--background-raised);
+  box-shadow: var(--shadow-md);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.tseat-name {
+  flex: 1;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+.tseat-stack {
+  font-size: 12px;
+  color: var(--foreground-muted);
+}
+.tseat.is-me .tseat-plate {
+  min-width: 140px;
+}
+.tseat.is-turn .tseat-plate {
+  border-color: var(--c);
+  box-shadow: 0 0 0 3px hsl(from var(--c) h s l / 0.35);
+}
+.tseat-timer {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -5px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(to right, var(--c) calc(var(--t) * 100%), hsl(from var(--c) h s l / 0.2) 0);
+}
+.tseat.is-folded .tseat-plate {
+  opacity: 0.6;
+}
+.tseat.is-out {
+  opacity: 0.45;
+}
+.tseat.is-away .tseat-plate {
+  border-style: dashed;
+}
+.tseat.is-winner .tseat-plate {
+  border-color: var(--success);
+  box-shadow: 0 0 0 4px hsl(from var(--success) h s l / 0.3);
+  animation: pop 0.4s ease-out;
+}
+.tseat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  max-width: 190px;
+  min-height: 18px;
+}
+.marker,
+.tag {
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  line-height: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--background-overlay);
+  border: 1px solid var(--border);
+}
+.marker {
+  font-size: 10px;
+}
+.marker.is-dealer {
+  background: #fff;
+  color: #1d1b22;
+  border-color: #c9c3b5;
+}
+.tag.is-allin {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.tag.is-hand {
+  background: var(--background-raised);
+}
+.tag.is-gain {
+  color: var(--success-strong);
+}
+.tag.is-loss {
+  color: var(--danger);
+}
+.tag.is-said {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 18%, var(--background-raised));
+  animation: pop 0.25s ease-out;
+}
+.tseat-bet {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 1px 4px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.32);
+  color: #f6f1e4;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1;
+  animation: pop 0.25s ease-out;
+}
+
+/* ---------------------------------------------------------------- ta place */
+
+.my-panel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: min(100%, 880px);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1.5px solid var(--border);
+  background: var(--background-raised);
+  box-shadow: var(--shadow-md);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.my-panel.is-turn {
+  border-color: var(--c);
+  box-shadow: 0 0 0 4px hsl(from var(--c) h s l / 0.22);
+}
+.my-cards {
+  display: flex;
+  gap: var(--space-2);
+}
+.my-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.my-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+}
+.my-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.my-stack .mono {
+  font-weight: 700;
+  font-size: 18px;
+}
+.my-hand strong {
+  color: var(--c);
+}
+.my-status {
+  margin: 0;
+}
+.tactions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.action-row,
+.raise-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.raise-row input[type="range"] {
+  flex: 1;
+  min-width: 140px;
+  accent-color: var(--c);
+}
+.tapis-board .btn-secondary {
+  background: var(--foreground);
+  color: var(--background);
+}
+.tapis-board .btn-secondary:not(:disabled):hover {
+  transform: translateY(-1px);
+  filter: brightness(120%);
+}
+.tapis-board .btn-sm {
+  padding: 4px var(--space-3);
+  font-size: 13px;
+}
+.chip-sm {
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  line-height: 22px;
+}
+.swap-hint {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* ---------------------------------------------------------------- côté */
+
+.tapis-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.tapis-side .side-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+.tapis-side .side-block p,
+.tapis-side .side-block ul {
+  margin: 0;
+}
+.tapis-side .side-block ul {
+  padding-left: 18px;
+}
+.tapis-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.tapis-log li strong {
+  color: var(--c);
+}
+.tapis-log li.is-dealer {
+  margin-top: 4px;
+  color: var(--foreground-muted);
+  font-weight: 600;
+}
+.side-rules summary {
+  cursor: pointer;
+}
+.tapis-bar .bar-cash {
+  background: var(--c);
+}
+
+/* ---------------------------------------------------------------- adaptatif */
+
+.tapis-board.is-compact .tapis-main {
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--space-2) var(--space-3) var(--space-5);
+}
+.tapis-board.is-compact .tapis-table {
+  margin: 54px auto 50px;
+}
+.tapis-board.is-compact .tseat-plate {
+  min-width: 0;
+  padding-right: 8px;
+}
+.tapis-board.is-compact .tseat-name {
+  max-width: 64px;
+}
+.tapis-board.is-compact .table-center {
+  inset: 33% 6% 9%;
+  justify-content: flex-start;
+}
+.tapis-board.is-compact .my-panel {
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--space-3);
+}
+.tapis-board.is-compact .my-cards {
+  justify-content: center;
+}
+.tapis-board.is-compact .twists {
+  order: 3;
+}
