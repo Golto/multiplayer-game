@@ -16,6 +16,7 @@ import {
   isZero,
   neg,
   rng,
+  drawX,
   SKYJO_COUNTS,
   weight,
   type Poly,
@@ -89,6 +90,32 @@ describe("degré 0", () => {
       expect(Math.min(...values)).toBe(-2);
       expect(Math.max(...values)).toBe(12);
     }
+  });
+});
+
+describe("tirage de x", () => {
+  it("sort d'un sac : −1, 0 et 1 une fois toutes les trois manches, dans un ordre variable", () => {
+    for (const r of [rng(3), Math.random]) {
+      const bag: number[] = [];
+      const orders = new Set<string>();
+      for (let cycle = 0; cycle < 200; cycle++) {
+        const three = [drawX(bag, r), drawX(bag, r), drawX(bag, r)];
+        expect([...three].sort()).toEqual([-1, 0, 1]);
+        orders.add(three.join(","));
+      }
+      expect(orders.size).toBe(6);
+    }
+  });
+
+  it("montre ce qui reste dans le sac", () => {
+    const game = new ZeroGame("Z", { changed: () => {}, emit: () => {} }, seeded(), false);
+    const a = game.addPlayer("A");
+    game.addPlayer("B");
+    game.handle(a.id, { t: "start" });
+    expect(game.view(a.id).xLeft).toEqual([-1, 0, 1]);
+    game.endRound();
+    const first = game.results[0]!.x;
+    expect(game.view(a.id).xLeft).toEqual([-1, 0, 1].filter((x) => x !== first));
   });
 });
 
@@ -197,7 +224,7 @@ describe("manche", () => {
     expect(game.lastEvent).toMatchObject({ k: "column", col: 0 });
   });
 
-  it("le dé tire x, et chaque carte vaut P(x)", () => {
+  it("x sort du sac, et chaque carte vaut P(x)", () => {
     const { game, ps } = setup(2);
     begin(game, ps);
     const cols = game.config.cols;

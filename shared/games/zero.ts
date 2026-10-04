@@ -5,7 +5,7 @@
 // - À son tour, on pioche (paquet ou défausse). Une carte prise à la défausse s'échange forcément
 //   contre une carte de sa grille ; une carte du paquet s'échange, ou se défausse et l'on retourne
 //   alors une de ses cartes cachées.
-// - **Score** : à la fin de la manche, un dé tire x parmi −1, 0 et 1, et chaque carte vaut P(x).
+// - **Score** : à la fin de la manche, x sort d'un sac (−1, 0 et 1, une fois chacun toutes les trois manches), et chaque carte vaut P(x).
 //   Avec x = 1, chaque carte vaut sa valeur « Skyjo » (de −2 à 12) ; avec x = 0, seule sa constante
 //   compte ; avec x = −1, les termes de degré impair changent de signe.
 // - **Colonnes** : une colonne entièrement révélée s'efface si ses cartes ont le même terme dominant
@@ -217,6 +217,27 @@ export function columnCells(cols: number, rows: number, c: number): number[] {
   return Array.from({ length: rows }, (_, r) => r * cols + c);
 }
 
+/**
+ * Le tirage de x en fin de manche, dans un sac : −1, 0 et 1 y sont mélangés et sortent un par un,
+ * puis le sac se remplit à nouveau. Chaque valeur sort donc une fois toutes les trois manches.
+ * Le sac est modifié sur place.
+ */
+export function drawX(bag: number[], r: () => number): number {
+  if (bag.length === 0) {
+    bag.push(...RULES.xValues);
+    for (let i = bag.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [bag[i], bag[j]] = [bag[j]!, bag[i]!];
+    }
+  }
+  return bag.pop()!;
+}
+
+/** Les valeurs de x que le sac peut encore donner à la prochaine manche, dans l'ordre. */
+export function xLeft(bag: readonly number[]): number[] {
+  return bag.length ? [...bag].sort((a, b) => a - b) : [...RULES.xValues];
+}
+
 /** Valeur d'un polynôme en x. */
 export function evaluate(p: Poly, x: number): number {
   return p.reduce((s, c, i) => s + c * x ** i, 0);
@@ -310,6 +331,8 @@ export interface ZeroView {
   /** Celui qui a tout révélé : les autres jouent leur dernier tour. */
   closer: number | null;
   results: RoundResult[];
+  /** Les valeurs de x encore dans le sac pour la prochaine fin de manche. */
+  xLeft: number[];
   lastEvent: ZeroEvent | null;
 }
 

@@ -261,7 +261,11 @@ export function Board({ view, send, onLeave }: Props) {
                 </li>
               ))}
             </ul>
-            <p class="muted">Le dé tire x à la fin de la manche ; chaque carte vaut alors P(x).</p>
+            <p class="muted">
+              À la fin de la manche, x sort d'un sac et chaque carte vaut P(x). Encore dans le sac :{" "}
+              <strong class="mono">{view.xLeft.map(minus).join(", ")}</strong>
+              {view.xLeft.length === 1 ? " — c'est donc x qui comptera." : "."}
+            </p>
           </section>
           <section class="panel side-block">
             <h2 class="h6">Scores</h2>
@@ -311,8 +315,8 @@ function RoundEnd({ view, send, width }: { view: ZeroView; send: (a: ZeroAction)
               {over ? "La partie est jouée" : "Le décompte"}
             </h2>
           </div>
-          <div class="x-die" aria-label={`Le dé a tiré x = ${result.x}`}>
-            <span class="muted small">le dé tire</span>
+          <div class="x-die" aria-label={`Le sac a donné x = ${result.x}`}>
+            <span class="muted small">du sac sort</span>
             <span class="mono x-big">x = {minus(result.x)}</span>
           </div>
         </div>
