@@ -5,10 +5,10 @@ Une salle de jeux de société multijoueur dans le navigateur. On choisit un jeu
 | Adresse | Page |
 | --- | --- |
 | `/` | La salle : tous les jeux, et un raccourci pour rejoindre un salon par son code |
-| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes`, `/echos`, `/zero` | La page d'un jeu : ouvrir ou rejoindre un salon |
+| `/rumeurs`, `/topologie`, `/puzzle`, `/puits`, `/cartographes`, `/echos`, `/zero`, `/tapis` | La page d'un jeu : ouvrir ou rejoindre un salon |
 | `/r/CODE` | Un salon : lien d'invitation, puis la partie elle-même |
 
-Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits**, **Cartographes**, **Échos** et **Zéro** (`shared/catalog.ts`).
+Jeux disponibles : **Rumeurs**, **Topologie**, **Puzzle**, **Puits**, **Cartographes**, **Échos**, **Zéro** et **Tapis** (`shared/catalog.ts`).
 
 ## Rumeurs
 
@@ -92,6 +92,18 @@ Le Skyjo des polynômes, de 2 à 8 joueurs, tour par tour. Au degré 0, c'est ex
 - Grilles au choix : 2 × 3, 3 × 3, 3 × 4 (classique), 3 × 5, 4 × 4, 4 × 5. La table tient sur un seul écran : la taille des cartes se calcule d'après la fenêtre, la grille et le nombre de joueurs.
 - Les cartes cachées ne quittent jamais le serveur ; un joueur absent joue tout seul.
 
+## Tapis
+
+Un Texas hold'em sans limite entre amis, de 2 à 8 joueurs, avec des jetons pour rire et trois entorses que l'hôte peut désactiver une à une. Sans elles, c'est un hold'em classique.
+
+- **Le fond** : 2 000 jetons chacun, blindes 10/20 qui montent toutes les 10, 6 ou 4 donnes selon la vitesse choisie. Deux cartes cachées, flop, tournant, rivière ; on se couche, parle, suit, mise, relance (au moins du montant de la dernière relance) ou fait tapis. Une relance incomplète à tapis ne rouvre pas les enchères à qui a déjà parlé. Pots annexes, partage des pots à égalité (les jetons en trop vont aux premiers à gauche du bouton), mise non suivie rendue. À deux, le bouton est petite blinde.
+- **La folle** : avant la distribution, une carte est retournée au milieu. Les trois autres cartes de sa hauteur sont folles pour la donne et remplacent n'importe quelle carte, même une carte déjà présente. « Cinq d'une sorte » devient possible, au-dessus de la quinte flush.
+- **L'échange** : une fois par donne, à partir du flop et quand c'est à lui de parler, un joueur paie une grosse blinde (argent mort, au pot principal) pour remplacer une de ses deux cartes par celle du dessus du paquet.
+- **La prime** : chaque donne tire un défi parmi dix (gagner avec 7-2, sans abattage, avec deux figures, deux cartes rouges, une couleur ou mieux, à tapis, après un échange…). Qui remporte le pot principal en le relevant touche une grosse blinde de chacun des autres joueurs encore en lice.
+- Fin de partie : au dernier en lice, ou après 15 ou 30 donnes (le plus gros tapis gagne). Les éliminés regardent la suite.
+- 40 secondes de parole ; ensuite, ou si le joueur est absent, il parle s'il le peut, sinon il se couche. Les cartes cachées ne quittent jamais le serveur : elles ne sont montrées qu'à l'abattage, quand tout le monde est à tapis, ou si leur propriétaire décide de les montrer après la donne.
+- La table s'adapte : le tapis ovale et les places se calculent d'après la fenêtre, de 2 à 8 joueurs, sur ordinateur comme au téléphone.
+
 ## Sébastopol (`/station`)
 
 Hors jeu et hors salon : une station orbitale rétro-futuriste à explorer seul en vue subjective, hommage libre à l'esthétique d'*Alien: Isolation* (aucune ressource ni marque du jeu : tout est généré par le code). Three.js, page séparée (`client/station.html`).
@@ -140,6 +152,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `shared/games/cartographes.ts` | Génération de la carte, zones, pictogrammes, règles et messages de Cartographes |
 | `shared/games/echos.ts` | Salles, déplacements et collisions, plaques et portes, règles et messages d'Échos |
 | `shared/games/zero.ts` | Polynômes (évaluation, terme dominant, écriture), paquet, colonnes et score de Zéro |
+| `shared/games/tapis.ts` | Cartes, évaluation des mains (folles comprises) et leurs noms, primes, blindes, messages de Tapis |
 | `server/index.ts` | HTTP (dont les balises d'aperçu de lien par page), API `/api/rooms/:code`, WebSocket `/ws`, salons et reconnexion |
 | `server/platform.ts` | Le contrat `GameRoom` qu'un jeu implémente côté serveur |
 | `server/games/registry.ts` | Les jeux disponibles côté serveur |
@@ -150,6 +163,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `server/games/cartographes/` | Tours de Cartographes (information cachée, carte commune) et ses tests |
 | `server/games/echos/` | Simulation d'Échos (enregistrement, échos, paradoxe, versus) et ses tests |
 | `server/games/zero/` | Tours de Zéro (pioche, colonnes, dernier tour, doublement) et ses tests |
+| `server/games/tapis/` | Donnes de Tapis (enchères, pots annexes, échange, prime, éliminations) et ses tests |
 | `client/src/main.tsx` | Coquille : connexion, routes, salon en cours |
 | `client/src/hub/` | La salle de jeux et les couvertures des jeux à venir |
 | `client/src/games/registry.ts` | Les jeux disponibles côté client |
@@ -160,6 +174,7 @@ La plateforme (salons, codes, reconnexion, thème, sons, salle de jeux) ne sait 
 | `client/src/games/cartographes/` | Page, couverture, pictogrammes, carte en SVG, carnet, journal |
 | `client/src/games/echos/` | Page, couverture, salle en canvas, prédiction, manette tactile |
 | `client/src/games/zero/` | Page, couverture, cartes polynômes, table, décompte |
+| `client/src/games/tapis/` | Page, couverture, cartes à jouer et jetons, table ovale, paroles, classement |
 | `client/src/ui/` | En-tête, salle d'attente et formulaire d'entrée communs, icônes, guillochis |
 | `client/src/sound/` | Moteur sonore et sons d'interface communs |
 | `client/src/tokens.css` | Tokens Golpex (couleurs, typo, espacements, rayons) |

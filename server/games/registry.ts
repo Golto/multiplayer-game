@@ -9,6 +9,7 @@ import { PuitsGame } from "./puits/game.js";
 import { CartoGame } from "./cartographes/game.js";
 import { EchoGame } from "./echos/game.js";
 import { ZeroGame } from "./zero/game.js";
+import { TapisGame } from "./tapis/game.js";
 
 export const GAMES: Record<GameId, GameDefinition> = {
   rumeurs: { id: "rumeurs", create: (code, host) => new Rumeurs(code, () => host.changed()) },
@@ -18,6 +19,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   cartographes: { id: "cartographes", create: (code, host) => new CartoGame(code, host) },
   echos: { id: "echos", create: (code, host) => new EchoGame(code, host) },
   zero: { id: "zero", create: (code, host) => new ZeroGame(code, host) },
+  tapis: { id: "tapis", create: (code, host) => new TapisGame(code, host) },
 };
 
 export function gameDefinition(id: unknown): GameDefinition | undefined {
