@@ -680,3 +680,16 @@ button.zcard.is-flip:hover {
 .zero-bar.has-axis {
   overflow: visible;
 }
+
+/* La loupe : une petite carte survolée, affichée en grand à côté. */
+.zpeek {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.35));
+  animation: pop 0.14s ease-out;
+}
+.zero-others .zcard:not(.is-back):not(.is-removed),
+.zero-round .zcard:not(.is-back):not(.is-removed) {
+  cursor: zoom-in;
+}

@@ -1,9 +1,10 @@
 // Cartes de Zéro : un polynôme bien typographié, la couleur de sa valeur Skyjo (en x = 1 : bleu
 // pour les négatives, puis vert, jaune, rouge), ses trois valeurs possibles, un dos guilloché.
 
-import { useLayoutEffect, useMemo, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { RULES, columnCells, evaluate, format, leadingTerm, type Poly, type PublicCell } from "../../../../shared/games/zero";
 import { hypotrochoid } from "../../ui/art";
+import { play } from "../../sound/engine";
 
 /** Le polynôme écrit comme en maths : x en italique, exposants en hauteur, vrais signes moins. */
 export function PolyText({ p, class: cls, ref }: { p: Poly; class?: string; ref?: preact.Ref<HTMLSpanElement> }) {
@@ -35,6 +36,68 @@ export function tone(p: Poly): string {
   return v <= 4 ? "low" : v <= 8 ? "mid" : "high";
 }
 
+/* ---------------------------------------------------------------- loupe */
+
+// Survoler une petite carte (chez un adversaire, au décompte) l'affiche en grand à côté.
+// Au doigt : on appuie et on garde le doigt dessus. Une seule loupe pour toute la table.
+type Peek = { card: Poly; rect: DOMRect; owner: object } | null;
+let setPeek: ((p: Peek) => void) | null = null;
+let current: object | null = null;
+
+function showPeek(p: Peek) {
+  current = p?.owner ?? null;
+  setPeek?.(p);
+}
+
+/** La carte agrandie ; à placer une fois sur la table. */
+export function CardPeek() {
+  const [peek, set] = useState<Peek>(null);
+  useEffect(() => {
+    setPeek = set;
+    return () => {
+      setPeek = null;
+    };
+  }, []);
+  if (!peek) return null;
+  const W = Math.min(170, Math.max(130, innerHeight * 0.2));
+  const H = W * 1.4;
+  const r = peek.rect;
+  let left = r.right + 12;
+  if (left + W > innerWidth - 8) left = r.left - 12 - W;
+  left = Math.max(8, left);
+  const top = Math.min(Math.max(8, r.top + r.height / 2 - H / 2), innerHeight - H - 8);
+  return (
+    <div class="zpeek" style={{ left: `${left}px`, top: `${top}px`, "--w": `${Math.round(W)}px` } as never} aria-hidden="true">
+      <ZCard cell={{ card: peek.card, up: true, removed: false }} />
+    </div>
+  );
+}
+
+/** Les gestes qui ouvrent et ferment la loupe sur une carte. */
+function usePeek(card: Poly | null) {
+  const owner = useRef({}).current;
+  // Si la carte disparaît sous la souris (colonne effacée, nouvelle manche), la loupe se ferme.
+  useEffect(
+    () => () => {
+      if (current === owner) showPeek(null);
+    },
+    [],
+  );
+  if (!card) return {};
+  const open = (e: PointerEvent) => {
+    showPeek({ card, rect: (e.currentTarget as HTMLElement).getBoundingClientRect(), owner });
+    play("card.hover", { gain: 0.6 });
+  };
+  const close = () => current === owner && showPeek(null);
+  return {
+    onPointerEnter: (e: PointerEvent) => e.pointerType === "mouse" && open(e),
+    onPointerLeave: close,
+    onPointerDown: (e: PointerEvent) => e.pointerType !== "mouse" && open(e),
+    onPointerUp: (e: PointerEvent) => e.pointerType !== "mouse" && close(),
+    onPointerCancel: close,
+  };
+}
+
 interface CardProps {
   cell: PublicCell;
   onClick?: () => void;
@@ -44,17 +107,27 @@ interface CardProps {
   label?: string;
   /** Petite carte : sans les trois valeurs. */
   small?: boolean;
+  /** Survolée, elle s'affiche en grand à côté. */
+  peek?: boolean;
 }
 
-export function ZCard({ cell, onClick, hint, fresh, label, small }: CardProps) {
-  if (cell.removed) return <div class="zcard is-removed" aria-label="Colonne effacée" />;
+export function ZCard({ cell, onClick, hint, fresh, label, small, peek }: CardProps) {
   const face = cell.up && cell.card;
+  const gestures = usePeek(peek && face && !cell.removed ? cell.card : null);
+  if (cell.removed) return <div class="zcard is-removed" aria-label="Colonne effacée" />;
   const content = face ? <CardFace p={cell.card!} small={small} /> : <CardBack small={small} />;
   const cls = `zcard ${face ? `tone-${tone(cell.card!)}` : "is-back"} ${hint ? `is-${hint}` : ""} ${fresh ? "is-fresh" : ""}`;
   const aria = label ?? (face ? format(cell.card!) : "Carte cachée");
-  if (!onClick) return <div class={cls} aria-label={aria} title={face ? aria : undefined}>{content}</div>;
+  // Avec la loupe, l'infobulle du navigateur ferait doublon.
+  const title = face && !peek ? aria : undefined;
+  if (!onClick)
+    return (
+      <div class={cls} aria-label={aria} title={title} {...gestures}>
+        {content}
+      </div>
+    );
   return (
-    <button type="button" class={cls} onClick={onClick} data-sound="none" aria-label={aria} title={face ? aria : undefined}>
+    <button type="button" class={cls} onClick={onClick} data-sound="none" aria-label={aria} title={title} {...gestures}>
       {content}
     </button>
   );
@@ -156,9 +229,11 @@ interface GridProps {
   fresh?: number | null;
   /** Sous chaque colonne : le terme dominant commun, s'il y en a un. */
   showLeads?: boolean;
+  /** La loupe au survol ; par défaut pour les petites cartes. */
+  peek?: boolean;
 }
 
-export function Grid({ cells, rows, cols, width, onCell, hint, fresh, showLeads = false }: GridProps) {
+export function Grid({ cells, rows, cols, width, onCell, hint, fresh, showLeads = false, peek = width < 96 }: GridProps) {
   const small = width < 58;
   return (
     <div class={`zgrid ${small ? "is-small" : ""}`} style={{ "--cols": cols, "--w": `${Math.round(width)}px` } as never}>
@@ -166,6 +241,7 @@ export function Grid({ cells, rows, cols, width, onCell, hint, fresh, showLeads 
         <ZCard
           cell={cell}
           small={small}
+          peek={peek}
           hint={hint ? hint(i, cell) : null}
           fresh={fresh === i}
           onClick={onCell && hint?.(i, cell) ? () => onCell(i) : undefined}
