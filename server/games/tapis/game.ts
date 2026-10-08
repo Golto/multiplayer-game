@@ -16,7 +16,7 @@ import {
   cardLabel,
   handName,
   newDeck,
-  rankName,
+  wildOf,
   shuffle,
   type BestHand,
   type Card,
@@ -61,6 +61,8 @@ interface Player {
   /** A parlé depuis la dernière relance complète : il ne peut plus relancer après une relance incomplète. */
   actedFull: boolean;
   exchanged: boolean;
+  /** La carte rendue lors d'un échange, montrée à tous. */
+  discarded: Card | null;
   shown: boolean;
   startStack: number;
 }
@@ -154,6 +156,7 @@ export class TapisGame implements GameRoom {
       acted: false,
       actedFull: false,
       exchanged: false,
+      discarded: null,
       shown: false,
       startStack: RULES.stack,
     };
@@ -302,7 +305,7 @@ export class TapisGame implements GameRoom {
   }
 
   private resetHand(p: Player, inHand: boolean): void {
-    Object.assign(p, { inHand, cards: [], folded: false, allIn: false, bet: 0, committed: 0, acted: false, actedFull: false, exchanged: false, shown: false, ready: false, startStack: p.stack });
+    Object.assign(p, { inHand, cards: [], folded: false, allIn: false, bet: 0, committed: 0, acted: false, actedFull: false, exchanged: false, discarded: null, shown: false, ready: false, startStack: p.stack });
   }
 
   get blinds() {
@@ -346,7 +349,8 @@ export class TapisGame implements GameRoom {
     this.currentBet = bb;
     this.minRaise = bb;
     this.lastEvent = { k: "deal", hand: this.handNo };
-    const wild = this.wildCard ? ` · folles : les ${rankName(this.wildCard.r, true)}` : "";
+    const twin = wildOf(this.wildCard);
+    const wild = twin ? ` · folle : ${cardLabel(twin)}` : "";
     this.say(null, `Donne ${this.handNo + 1} · blindes ${sb}/${bb}${wild}`);
     this.toAct = null;
     const first = this.bettingOver() ? undefined : this.next(bbPlayer.slot, (p) => this.needsAction(p));
@@ -481,17 +485,18 @@ export class TapisGame implements GameRoom {
   exchange(slot: number, index: number): void {
     const p = this.mustAct(slot);
     if (!this.config.exchange) throw new GameError("L'échange n'est pas en jeu à cette table.");
-    if (this.street === "preflop") throw new GameError("L'échange s'ouvre au flop.");
+    if (this.street !== "flop") throw new GameError("L'échange ne se fait qu'au flop.");
     if (p.exchanged) throw new GameError("Un seul échange par donne.");
     if (index !== 0 && index !== 1) throw new GameError("Choisis une de tes deux cartes.");
-    const cost = this.blinds.bb;
+    const cost = this.blinds.bb * RULES.exchangeBB;
     if (p.stack <= cost) throw new GameError(`L'échange coûte ${cost} : il te faut plus de jetons.`);
     p.stack -= cost;
     this.dead += cost;
+    p.discarded = p.cards[index]!;
     p.cards[index] = this.draw();
     p.exchanged = true;
     this.lastEvent = { k: "exchange", slot };
-    this.say(slot, `échange une carte (${cost} au pot)`);
+    this.say(slot, `échange et rend ${cardLabel(p.discarded)} (${cost} au pot)`);
     this.host.changed();
   }
 
@@ -550,11 +555,11 @@ export class TapisGame implements GameRoom {
     this.turnTimer = null;
     this.toAct = null;
     this.deadline = null;
-    const { bb } = this.blinds;
+    const { sb } = this.blinds;
     const live = this.players.filter((p) => p.inHand && !p.folded);
     const showdown = live.length > 1;
     if (showdown) this.street = "showdown";
-    const wild = this.wildCard?.r ?? null;
+    const wild = wildOf(this.wildCard);
     const best = new Map<number, BestHand>();
     if (showdown) for (const p of live) best.set(p.slot, bestHand([...p.cards, ...this.board], wild));
 
@@ -620,12 +625,12 @@ export class TapisGame implements GameRoom {
         for (const payer of this.alive()) {
           if (qualified.includes(payer)) continue;
           for (const q of qualified) {
-            const pay = Math.min(bb, payer.stack);
+            const pay = Math.min(sb, payer.stack);
             payer.stack -= pay;
             q.stack += pay;
           }
         }
-        bounty = { id: def.id, winners: qualified.map((q) => q.slot), each: bb };
+        bounty = { id: def.id, winners: qualified.map((q) => q.slot), each: sb };
         if (qualified.length === 1) this.say(qualified[0]!.slot, `touche la prime « ${def.name} »`);
         else this.say(null, `${qualified.map((q) => q.name).join(" et ")} touchent la prime « ${def.name} »`);
       }
@@ -739,6 +744,7 @@ export class TapisGame implements GameRoom {
           bet: p.bet,
           committed: p.committed,
           exchanged: p.exchanged,
+          discarded: p.discarded,
           shown: p.shown,
           cards: p.cards.map((c) => (open ? c : null)),
         };

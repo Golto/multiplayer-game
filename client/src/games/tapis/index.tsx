@@ -9,9 +9,9 @@ import { Cover, Home } from "./Home";
 import "./tapis.css";
 
 const TWISTS: { key: "wild" | "exchange" | "bounty"; name: string; text: string }[] = [
-  { key: "wild", name: "La folle", text: "Une carte retournée à chaque donne : les trois autres de sa hauteur remplacent n'importe quelle carte." },
-  { key: "exchange", name: "L'échange", text: "Une fois par donne, dès le flop : une grosse blinde pour remplacer une de ses cartes." },
-  { key: "bounty", name: "La prime", text: "Un défi par donne ; le relever en gagnant rapporte une grosse blinde de chacun." },
+  { key: "wild", name: "La folle", text: "Une carte retournée à chaque donne : sa jumelle (même hauteur, même couleur) remplace n'importe quelle carte." },
+  { key: "exchange", name: "L'échange", text: "Une fois par donne, au flop : deux grosses blindes pour remplacer une de ses cartes, montrée à tous." },
+  { key: "bounty", name: "La prime", text: "Un défi par donne ; le relever en gagnant rapporte une petite blinde de chacun." },
 ];
 
 const SPEED_NAMES: Record<string, string> = { calme: "Calme", normal: "Normale", rapide: "Rapide" };
