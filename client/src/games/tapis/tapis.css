@@ -2,146 +2,138 @@
 
 /* ---------------------------------------------------------------- cartes */
 
+/* Comme les cartes de Rumeurs : un SVG qui suit le thème, aux couleurs de l'enseigne (--c). */
 .pcard {
   --w: 60px;
-  --red: #c42a3a;
-  --black: #1d1b22;
   position: relative;
   display: block;
   flex: none;
   width: var(--w);
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 100 / 140;
   padding: 0;
   border: 0;
-  border-radius: 9% / 6.4%;
+  border-radius: 7%;
   background: none;
   font: inherit;
-  container-type: inline-size;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.14));
   transition:
     transform 0.2s ease-out,
     opacity 0.25s,
-    filter 0.25s,
-    box-shadow 0.2s;
+    filter 0.25s;
 }
 button.pcard {
   cursor: pointer;
 }
-.pc-face,
-.pc-back {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
+.pc-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-/* Les faces restent claires, comme de vraies cartes, quel que soit le thème. */
-.pc-face {
-  background: linear-gradient(170deg, #fffefb, #f4f0e6);
-  border: 1px solid rgba(20, 16, 10, 0.2);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
-  color: var(--black);
+.pc-outer {
+  fill: var(--background-overlay);
+  stroke: var(--c);
+  stroke-width: 1.4;
+}
+.pc-inner {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 0.5;
+  opacity: 0.7;
+}
+.pc-band {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 0.3;
+  opacity: 0.55;
+}
+.pc-rosette {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 0.3;
+  opacity: 0.55;
+}
+.pc-medal {
+  fill: var(--background-raised);
+  stroke: var(--c);
+  stroke-width: 1;
+}
+.pc-svg text {
+  fill: var(--c);
   font-family: var(--font-sans);
 }
-.pcard.is-red .pc-face {
-  color: var(--red);
-}
-.pc-corner {
-  position: absolute;
-  top: 5%;
-  left: 8%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 0.95;
-}
-.pc-corner b {
-  font-size: 24cqw;
+.pc-rank {
   font-weight: 700;
+  font-size: 19px;
   letter-spacing: -0.04em;
 }
-.pc-corner i {
-  font-style: normal;
-  font-size: 20cqw;
+.pc-rank.is-wide {
+  font-size: 15px;
 }
-.pc-corner.is-bottom {
-  top: auto;
-  left: auto;
-  bottom: 5%;
-  right: 8%;
-  transform: rotate(180deg);
+.pc-suit-small {
+  font-size: 12px;
 }
-.pc-center {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 50cqw;
-  line-height: 1;
+.pc-pips text {
+  font-size: 17px;
 }
-.pc-center.is-figure {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.pc-ace {
+  font-size: 26px;
 }
-.pc-center.is-figure b {
-  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-  font-size: 44cqw;
+.pc-figure {
+  font-family: Georgia, "Times New Roman", serif !important;
   font-weight: 700;
+  font-size: 25px;
 }
-.pc-center.is-figure i {
-  font-style: normal;
-  font-size: 22cqw;
+.pc-figure-suit {
+  font-size: 12px;
 }
-/* Petite carte : un coin lisible, le symbole plus bas. */
-@container (max-width: 46px) {
-  .pc-corner b {
-    font-size: 34cqw;
-  }
-  .pc-corner i {
-    font-size: 28cqw;
-  }
-  .pc-center {
-    inset: 38% 0 0 30%;
-    font-size: 54cqw;
-  }
-  .pc-center.is-figure b {
-    font-size: 40cqw;
-  }
-  .pc-center.is-figure i {
-    display: none;
-  }
+.pc-figure-name {
+  font-weight: 700;
+  font-size: 6.2px;
+  letter-spacing: 0.22em;
 }
-/* La folle : liseré doré et étoile. */
-.pcard.is-wild .pc-face {
-  border-color: #c99a1c;
-  box-shadow:
-    inset 0 0 0 2px #e6b52b,
-    0 0 10px rgba(230, 181, 43, 0.55);
+.pc-big-rank {
+  font-weight: 700;
+  font-size: 46px;
+  letter-spacing: -0.05em;
 }
-.pc-wild {
-  position: absolute;
-  top: 4%;
-  right: 6%;
-  display: grid;
-  place-items: center;
-  width: 26cqw;
-  height: 26cqw;
-  border-radius: 50%;
-  background: #e6b52b;
-  color: #fff;
-  font-size: 17cqw;
-  line-height: 1;
+.pc-big-suit {
+  font-size: 42px;
+}
+/* La folle : liseré et étoile jaunes. */
+.pcard.is-wild .pc-outer {
+  stroke: var(--accent-yellow);
+  stroke-width: 3;
+}
+.pc-star circle {
+  fill: var(--accent-yellow);
+}
+.pc-svg .pc-star text {
+  fill: #fff;
+  font-size: 11px;
+}
+.pc-svg .pc-wild-label {
+  fill: var(--accent-yellow-deep);
+  font-weight: 700;
+  font-size: 5.6px;
+  letter-spacing: 0.3em;
+}
+.dark .pc-svg .pc-wild-label {
+  fill: var(--accent-yellow);
 }
 .pcard.is-win {
   transform: translateY(-7%);
+  filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 5px hsl(from var(--success) h s l / 0.7));
 }
-.pcard.is-win .pc-face {
-  box-shadow:
-    0 0 0 3px var(--success),
-    0 6px 16px rgba(0, 0, 0, 0.25);
+.pcard.is-win .pc-outer {
+  stroke: var(--success);
+  stroke-width: 3;
 }
-.pcard.is-pick .pc-face {
-  box-shadow: 0 0 0 3px var(--primary);
+.pcard.is-pick .pc-outer {
+  stroke: var(--primary);
+  stroke-width: 3;
+}
+.pcard.is-pick {
   animation: pick-pulse 1.1s ease-in-out infinite;
 }
 .pcard.is-pick:hover {
@@ -149,12 +141,12 @@ button.pcard {
 }
 @keyframes pick-pulse {
   50% {
-    box-shadow: 0 0 0 5px hsl(from var(--primary) h s l / 0.45);
+    filter: drop-shadow(0 0 6px hsl(from var(--primary) h s l / 0.7));
   }
 }
 .pcard.is-dim {
   opacity: 0.45;
-  filter: saturate(0.4);
+  filter: saturate(0.3);
 }
 .pcard.is-fresh {
   animation: deal 0.35s ease-out backwards;
@@ -165,24 +157,37 @@ button.pcard {
     transform: translateY(-18px) rotate(-6deg) scale(0.85);
   }
 }
-.pc-back {
-  background: radial-gradient(circle at 50% 45%, #3a3170, #241d4d 70%);
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-}
-.pc-back svg {
-  width: 100%;
-  height: 100%;
-}
-.back-frame {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.28);
+/* Le dos, comme celui de Rumeurs (classes propres à Tapis : pas de fuite vers les autres jeux). */
+.pcb-fill {
+  fill: var(--background-raised);
+  stroke: var(--primary);
   stroke-width: 1.4;
 }
-.back-rosette {
+.pcb-frame {
   fill: none;
-  stroke: rgba(255, 214, 140, 0.55);
-  stroke-width: 0.6;
+  stroke: var(--primary);
+  stroke-width: 0.5;
+  opacity: 0.8;
+}
+.pcb-rosette {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 0.3;
+  opacity: 0.6;
+}
+.pcb-rosette.is-second {
+  stroke: var(--secondary);
+  opacity: 0.45;
+}
+.pcb-medal circle {
+  fill: var(--background-overlay);
+  stroke: var(--primary);
+  stroke-width: 1.2;
+}
+.pc-svg .pcb-medal text {
+  fill: var(--primary);
+  font-weight: 700;
+  font-size: 17px;
 }
 
 /* ---------------------------------------------------------------- jetons */
@@ -341,26 +346,44 @@ button.pcard {
   margin: 60px auto 56px;
   max-width: 100%;
 }
-/* Le tapis : feutre vert, bord de bois. */
+/* La table : une surface Golpex, ovale, avec une piste guillochée (dessinée dans Board.tsx). */
 .felt {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.1), transparent 60%),
-    radial-gradient(ellipse at center, #2b7553, #1d5a3f 62%, #154330);
-  border: 14px solid #5b3b24;
-  box-shadow:
-    inset 0 0 0 2px rgba(0, 0, 0, 0.25),
-    inset 0 10px 40px rgba(0, 0, 0, 0.35),
-    0 0 0 2px #3e2716,
-    0 18px 40px rgba(0, 0, 0, 0.28);
+    radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%),
+    var(--background-raised);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
 }
-.dark .felt {
-  background:
-    radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.06), transparent 60%),
-    radial-gradient(ellipse at center, #1f5d42, #164532 62%, #0f3123);
-  border-color: #4a301e;
+.felt-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.felt-track {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 1.2;
+  opacity: 0.45;
+}
+.felt-track.is-dashed {
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+.felt-rosette {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 0.5;
+  opacity: 0.08;
+}
+.felt-rosette.is-second {
+  stroke: var(--secondary);
+  opacity: 0.08;
 }
 .table-center {
   position: absolute;
@@ -371,7 +394,7 @@ button.pcard {
   justify-content: center;
   gap: var(--space-2);
   z-index: 1;
-  color: #f6f1e4;
+  color: var(--foreground);
 }
 .twists {
   display: flex;
@@ -385,24 +408,32 @@ button.pcard {
   gap: 6px;
   padding: 3px 12px 3px 4px;
   border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  background: var(--background-overlay);
   font-size: 12px;
   line-height: 18px;
   cursor: help;
+}
+.twist-badge.is-wild {
+  border-color: var(--accent-yellow);
 }
 .twist-badge.is-bounty {
   padding-left: 10px;
 }
 .bounty-star {
-  color: #f0c24b;
+  color: var(--accent-yellow-deep);
+}
+.dark .bounty-star {
+  color: var(--accent-yellow);
 }
 .twist-badge.is-won {
-  background: #c99a1c;
-  color: #fff;
+  background: var(--accent-yellow);
+  border-color: var(--accent-yellow);
+  color: #2a2205;
   animation: pop 0.4s ease-out;
 }
 .twist-badge.is-won .bounty-star {
-  color: #fff;
+  color: inherit;
 }
 .tboard {
   display: flex;
@@ -410,12 +441,10 @@ button.pcard {
 }
 .tboard-slot {
   width: var(--w);
-  aspect-ratio: 5 / 7;
-  border-radius: 9% / 6.4%;
-  border: 1.5px dashed rgba(255, 255, 255, 0.22);
-}
-.tpot .muted {
-  color: rgba(246, 241, 228, 0.7);
+  aspect-ratio: 100 / 140;
+  border-radius: 7%;
+  border: 1.5px dashed var(--border);
+  background: color-mix(in srgb, var(--background) 40%, transparent);
 }
 .tpot {
   display: inline-flex;
@@ -423,7 +452,8 @@ button.pcard {
   gap: var(--space-2);
   padding: 4px 14px 4px 8px;
   border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  background: var(--background-overlay);
   font-size: 14px;
 }
 .result-banner {
@@ -446,11 +476,11 @@ button.pcard {
   line-height: 20px;
 }
 .result-line.is-bounty {
-  color: #a87c0d;
+  color: var(--accent-yellow-deep);
   font-weight: 600;
 }
 .dark .result-line.is-bounty {
-  color: #f0c24b;
+  color: var(--accent-yellow);
 }
 .result-actions {
   display: flex;
@@ -592,8 +622,9 @@ button.pcard {
   gap: 4px;
   padding: 1px 8px 1px 4px;
   border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.32);
-  color: #f6f1e4;
+  border: 1px solid var(--c);
+  background: var(--background-overlay);
+  color: var(--foreground);
   font-size: 12px;
   font-weight: 600;
   z-index: 1;

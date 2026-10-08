@@ -10,14 +10,13 @@
 //
 // Les trois entorses (chacune se désactive dans le salon) :
 // - **La folle** : à chaque donne, une carte est retournée au milieu de la table avant tout le
-//   reste. Les trois autres cartes de sa hauteur sont folles pour la donne : chacune remplace
-//   n'importe quelle carte. Avec elles, on peut faire « cinq d'une sorte », au-dessus de la quinte
-//   flush.
-// - **L'échange** : une fois par donne, à partir du flop et quand c'est à lui de parler, un joueur
-//   peut payer une grosse blinde (au pot) pour remplacer une de ses deux cartes par celle du dessus
-//   du paquet.
-// - **La prime** : chaque donne affiche un défi (gagner avec 7-2, gagner sans abattage…). Qui
-//   remporte le pot principal en le remplissant touche une grosse blinde de chacun des autres.
+//   reste. Sa jumelle (même hauteur, même couleur, l'autre enseigne : le 7♥ désigne le 7♦) est la
+//   seule carte folle de la donne : elle remplace n'importe quelle carte.
+// - **L'échange** : une fois par donne, au flop seulement et quand c'est à lui de parler, un joueur
+//   peut payer deux grosses blindes (au pot) pour remplacer une de ses deux cartes par celle du
+//   dessus du paquet. La carte rendue est montrée à toute la table.
+// - **La prime** : chaque donne affiche un défi (gagner avec 7-2, avec deux figures…). Qui
+//   remporte le pot principal en le relevant touche une petite blinde de chacun des autres.
 
 // ---------------------------------------------------------------- cartes
 
@@ -51,6 +50,18 @@ export function rankName(r: number, plural = false): string {
 const de = (r: number) => (r === 14 ? "d'as" : `de ${rankName(r, true)}`);
 /** « à l'as », « au roi », « à la dame », « au 9 ». */
 const au = (r: number) => (r === 14 ? "à l'as" : r === 12 ? "à la dame" : `au ${rankName(r)}`);
+
+/** La jumelle d'une carte : même hauteur, même couleur, l'autre enseigne (♠↔♣, ♥↔♦). */
+export function twinOf(c: Card): Card {
+  return { r: c.r, s: [3, 2, 1, 0][c.s]! };
+}
+
+/** La carte folle de la donne, d'après la carte retournée. */
+export function wildOf(turned: Card | null): Card | null {
+  return turned ? twinOf(turned) : null;
+}
+
+export const sameCard = (a: Card | null | undefined, b: Card | null | undefined) => !!a && !!b && a.r === b.r && a.s === b.s;
 
 export function cardName(c: Card): string {
   return `${rankName(c.r)} de ${SUIT_NAMES[c.s]}`;
@@ -165,17 +176,17 @@ function combos(n: number, k: number): number[][] {
 }
 
 /**
- * La meilleure main de cinq cartes (ou moins s'il y en a moins) parmi celles données. Une carte de
- * hauteur `wild` devient n'importe quelle carte, y compris une carte déjà présente : deux as de
- * pique dans une couleur, ou cinq rois, sont permis.
+ * La meilleure main de cinq cartes (ou moins s'il y en a moins) parmi celles données. La carte
+ * `wild` devient n'importe quelle carte, y compris une carte déjà présente : deux as de pique dans
+ * une couleur, ou cinq rois avec un carré, sont permis.
  */
-export function bestHand(cards: readonly Card[], wild: number | null = null): BestHand {
+export function bestHand(cards: readonly Card[], wild: Card | null = null): BestHand {
   const size = Math.min(5, cards.length);
   let best: BestHand = { value: -1, cat: 0, ranks: [], used: [], as: [] };
   if (!size) return { ...best, value: 0 };
   for (const idx of combos(cards.length, size)) {
     const chosen = idx.map((i) => cards[i]!);
-    const naturals = chosen.filter((c) => c.r !== wild);
+    const naturals = chosen.filter((c) => !sameCard(c, wild));
     const k = chosen.length - naturals.length;
     if (k === 0) {
       const v = evaluateCards(chosen);
@@ -197,7 +208,7 @@ export function bestHand(cards: readonly Card[], wild: number | null = null): Be
         const v = evaluateCards([...naturals, ...subs]);
         if (v.value > best.value) {
           let w = 0;
-          best = { ...v, used: idx, as: chosen.map((c) => (c.r === wild ? subs[w++]! : null)) };
+          best = { ...v, used: idx, as: chosen.map((c) => (sameCard(c, wild) ? subs[w++]! : null)) };
         }
         return;
       }
@@ -249,7 +260,7 @@ export interface BountyContext {
   showdown: boolean;
   allIn: boolean;
   exchanged: boolean;
-  wild: number | null;
+  wild: Card | null;
 }
 
 export interface Bounty {
@@ -263,15 +274,12 @@ export interface Bounty {
 
 export const BOUNTIES: readonly Bounty[] = [
   { id: "sept-deux", name: "Le 7-2", text: "Gagner en tenant un 7 et un 2, la pire main de départ.", check: (c) => [2, 7].every((r) => c.hole.some((x) => x.r === r)) },
-  { id: "bluff", name: "Sans montrer", text: "Gagner sans abattage : tous les autres se couchent.", check: (c) => !c.showdown },
   { id: "petite", name: "Petite main", text: "Gagner l'abattage avec une paire ou moins.", check: (c) => c.showdown && c.cat <= CAT.pair },
-  { id: "couleur", name: "Belle couleur", text: "Gagner avec une couleur ou mieux.", check: (c) => c.showdown && c.cat >= CAT.flush },
+  { id: "couleur", name: "Belle couleur", text: "Gagner l'abattage avec une couleur ou mieux.", check: (c) => c.showdown && c.cat >= CAT.flush },
   { id: "brelan", name: "Le brelan", text: "Gagner l'abattage avec un brelan, pas plus, pas moins.", check: (c) => c.showdown && c.cat === CAT.trips },
-  { id: "tapis", name: "Quitte ou double", text: "Gagner un pot en étant à tapis.", check: (c) => c.allIn },
-  { id: "rouges", name: "Tout rouge", text: "Gagner avec deux cartes rouges en main.", check: (c) => c.hole.length === 2 && c.hole.every(isRed) },
   { id: "figures", name: "Têtes couronnées", text: "Gagner avec deux figures (valet, dame, roi) en main.", check: (c) => c.hole.length === 2 && c.hole.every((x) => x.r >= 11 && x.r <= 13) },
-  { id: "folle", name: "Folie douce", text: "Gagner en tenant une carte folle en main.", needs: "wild", check: (c) => c.wild !== null && c.hole.some((x) => x.r === c.wild) },
-  { id: "echange", name: "Bon échange", text: "Gagner après avoir échangé une carte.", needs: "exchange", check: (c) => c.exchanged },
+  { id: "folle", name: "Folie douce", text: "Gagner en tenant la carte folle en main.", needs: "wild", check: (c) => c.hole.some((x) => sameCard(x, c.wild)) },
+  { id: "echange", name: "Bon échange", text: "Gagner l'abattage après avoir échangé une carte.", needs: "exchange", check: (c) => c.showdown && c.exchanged },
 ];
 
 export function bountyById(id: string | null): Bounty | undefined {
@@ -330,6 +338,8 @@ export interface TapisConfig {
 export const DEFAULT_CONFIG: TapisConfig = { wild: true, exchange: true, bounty: true, speed: "normal", length: 0 };
 
 export const RULES = {
+  /** Prix d'un échange, en grosses blindes. */
+  exchangeBB: 2,
   minPlayers: 2,
   maxPlayers: 8,
   /** Jetons de départ : cent grosses blindes. */
@@ -367,6 +377,8 @@ export interface TapisPlayer {
   /** Tout ce qu'il a mis dans le pot pendant la donne. */
   committed: number;
   exchanged: boolean;
+  /** La carte rendue lors d'un échange, montrée à tous. */
+  discarded: Card | null;
   /** Il a montré ses cartes à tout le monde. */
   shown: boolean;
   /** Ses cartes : null si cachées pour toi, vide s'il n'en a pas. */
@@ -419,7 +431,7 @@ export interface TapisView {
   bbSlot: number | null;
   street: Street;
   board: Card[];
-  /** La carte retournée qui désigne les folles (sa hauteur). */
+  /** La carte retournée : sa jumelle est la folle de la donne (voir `wildOf`). */
   wildCard: Card | null;
   bounty: string | null;
   /** À qui de parler, et jusqu'à quand (horodatage serveur, ms). */

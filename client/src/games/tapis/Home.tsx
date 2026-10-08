@@ -51,8 +51,8 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
             Tapis<span class="hero-dot">.</span>
           </h1>
           <p class="hero-lead">
-            Un Texas hold'em entre amis, avec trois entorses : des cartes folles qui changent à chaque donne, un échange de carte qui se paie, et
-            une prime à décrocher. Des jetons pour rire, pas d'argent.
+            Un Texas hold'em entre amis, avec trois petites entorses : une carte folle qui change à chaque donne, un échange de carte qui se
+            paie, et une prime à décrocher. Des jetons pour rire, pas d'argent.
           </p>
           <div class="tapis-hero-art">
             <Cover />
@@ -79,21 +79,24 @@ export function Home({ send, initialCode, connecting }: HomeProps) {
             <span class="how-num">02</span>
             <h3 class="h6">La folle</h3>
             <p>
-              À chaque donne, une carte est retournée au milieu : les trois autres de sa hauteur sont folles et remplacent n'importe quelle carte.
-              Avec elles, cinq rois battent la quinte flush.
+              À chaque donne, une carte est retournée au milieu. Sa jumelle (même hauteur, même couleur : le 7♥ désigne le 7♦) est la folle :
+              elle remplace n'importe quelle carte. Une seule par donne, et peut-être personne ne l'a.
             </p>
           </li>
           <li>
             <span class="how-num">03</span>
             <h3 class="h6">L'échange</h3>
-            <p>Une fois par donne, à partir du flop et quand c'est à toi de parler, paie une grosse blinde pour remplacer une de tes deux cartes.</p>
+            <p>
+              Une fois par donne, au flop et quand c'est à toi de parler, paie deux grosses blindes pour remplacer une de tes deux cartes. La carte
+              rendue est montrée à toute la table.
+            </p>
           </li>
           <li>
             <span class="how-num">04</span>
             <h3 class="h6">La prime</h3>
             <p>
-              Chaque donne affiche un défi : gagner avec 7-2, sans abattage, avec deux figures… Qui remporte le pot en le relevant touche une
-              grosse blinde de chacun des autres.
+              Chaque donne affiche un défi : gagner avec 7-2, avec deux figures, avec un brelan… Qui remporte le pot en le relevant touche une
+              petite blinde de chacun des autres.
             </p>
           </li>
         </ol>

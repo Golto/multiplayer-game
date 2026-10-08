@@ -9,15 +9,17 @@ import {
   STREET_NAMES,
   bestHand,
   bountyById,
+  cardLabel,
   cardName,
   handName,
-  rankName,
+  sameCard,
+  wildOf,
   type Card,
   type TapisAction,
   type TapisPlayer,
   type TapisView,
 } from "../../../../shared/games/tapis";
-import { PlayerSeal, accentVar } from "../../ui/art";
+import { PlayerSeal, accentVar, hypotrochoid } from "../../ui/art";
 import { Brand, SoundToggle, ThemeToggle } from "../../ui/chrome";
 import { Icon } from "../../ui/icons";
 import { play } from "../../sound/engine";
@@ -86,7 +88,7 @@ export function Board({ view, send, onLeave }: Props) {
   const { w: vw, h: vh } = useWindow();
   const size = layout(vw, vh);
   const now = useServerClock(view);
-  const wild = view.wildCard?.r ?? null;
+  const wild = wildOf(view.wildCard);
   const result = view.result;
   const myTurn = !!me && view.toAct === me.slot && !result;
   const actor = view.players.find((p) => p.slot === view.toAct);
@@ -159,7 +161,7 @@ export function Board({ view, send, onLeave }: Props) {
       <main class="tapis-main">
         <section class="tapis-play">
           <div class="tapis-table" style={{ width: `${size.tableW}px`, height: `${size.tableH}px` }}>
-            <div class="felt" aria-hidden="true" />
+            <Felt />
             {seats.map((p, i) => (
               <Seat
                 key={p.slot}
@@ -178,11 +180,11 @@ export function Board({ view, send, onLeave }: Props) {
 
             <div class="table-center">
               <div class="twists">
-                {view.wildCard && (
-                  <span class="twist-badge is-wild" title="Les trois autres cartes de cette hauteur remplacent n'importe quelle carte.">
-                    <PlayingCard card={view.wildCard} w={26} />
+                {view.wildCard && wild && (
+                  <span class="twist-badge is-wild" title={`La carte retournée est le ${cardName(view.wildCard)} : sa jumelle, le ${cardName(wild)}, remplace n'importe quelle carte.`}>
+                    <PlayingCard card={wild} w={26} wild />
                     <span>
-                      Folles : <strong>les {rankName(view.wildCard.r, true)}</strong>
+                      Folle : <strong>{cardLabel(wild)}</strong> <span class="muted">· jumelle du {cardLabel(view.wildCard)}</span>
                     </span>
                   </span>
                 )}
@@ -204,7 +206,7 @@ export function Board({ view, send, onLeave }: Props) {
                     <PlayingCard
                       card={c}
                       w={size.boardCard}
-                      wild={c.r === wild}
+                      wild={sameCard(c, wild)}
                       glow={result?.showdown && winUsed.includes(i + 2) ? "win" : null}
                       dim={!!result?.showdown && !winUsed.includes(i + 2)}
                       fresh={i >= view.board.length - (view.street === "flop" ? 3 : 1) && !result}
@@ -238,7 +240,7 @@ export function Board({ view, send, onLeave }: Props) {
                 Prime de la donne : <span class="accent-text">{bounty.name}</span>
               </h2>
               <p class="muted">
-                {bounty.text} Elle rapporte {fmt(view.blinds.bb)} de chacun des autres.
+                {bounty.text} Elle rapporte {fmt(view.blinds.sb)} de chacun des autres.
               </p>
             </section>
           )}
@@ -258,14 +260,34 @@ export function Board({ view, send, onLeave }: Props) {
           <details class="panel side-block side-rules">
             <summary class="h6">Les entorses</summary>
             <ul class="muted">
-              {view.config.wild && <li>La folle : les trois autres cartes de la hauteur retournée remplacent n'importe quelle carte.</li>}
-              {view.config.exchange && <li>L'échange : une fois par donne, dès le flop, {fmt(view.blinds.bb)} pour remplacer une de tes cartes.</li>}
+              {view.config.wild && <li>La folle : la jumelle de la carte retournée (même hauteur, même couleur) remplace n'importe quelle carte.</li>}
+              {view.config.exchange && (
+                <li>L'échange : une fois par donne, au flop, {fmt(view.blinds.bb * RULES.exchangeBB)} pour remplacer une de tes cartes ; la carte rendue est montrée à tous.</li>
+              )}
               {view.config.bounty && <li>La prime : {BOUNTIES.length} défis possibles, un par donne.</li>}
               {!view.config.wild && !view.config.exchange && !view.config.bounty && <li>Aucune : hold'em classique.</li>}
             </ul>
           </details>
         </aside>
       </main>
+    </div>
+  );
+}
+
+/** La table : une surface ovale, une piste en pointillés et une rosace guillochée au centre. */
+function Felt() {
+  const rosette = useMemo(() => hypotrochoid({ R: 60, r: 23, d: 40, cx: 50, cy: 50, scale: 0.5, steps: 1400 }), []);
+  const inner = useMemo(() => hypotrochoid({ R: 45, r: 16, d: 22, cx: 50, cy: 50, scale: 0.6, steps: 1000 }), []);
+  return (
+    <div class="felt" aria-hidden="true">
+      <svg class="felt-art" viewBox="0 0 200 100" preserveAspectRatio="none">
+        <ellipse cx="100" cy="50" rx="94" ry="45" class="felt-track" vector-effect="non-scaling-stroke" />
+        <ellipse cx="100" cy="50" rx="78" ry="34" class="felt-track is-dashed" vector-effect="non-scaling-stroke" />
+      </svg>
+      <svg class="felt-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <path d={rosette} class="felt-rosette" />
+        <path d={inner} class="felt-rosette is-second" />
+      </svg>
     </div>
   );
 }
@@ -291,7 +313,7 @@ function Seat({
   now: number;
   won: boolean;
   winUsed: number[];
-  wild: number | null;
+  wild: Card | null;
 }) {
   const rad = (angle * Math.PI) / 180;
   // Sur un petit écran, les places se resserrent pour ne pas sortir de l'écran.
@@ -314,7 +336,7 @@ function Seat({
         {!me && p.cards.length > 0 && (
           <div class="tseat-cards">
             {p.cards.map((c, i) => (
-              <PlayingCard card={c} w={cardW} wild={!!c && c.r === wild} glow={winUsed.includes(i) ? "win" : null} dim={p.folded} />
+              <PlayingCard card={c} w={cardW} wild={sameCard(c, wild)} glow={winUsed.includes(i) ? "win" : null} dim={p.folded} />
             ))}
           </div>
         )}
@@ -329,7 +351,11 @@ function Seat({
             <span class={`marker ${m === "D" ? "is-dealer" : ""}`}>{m}</span>
           ))}
           {p.allIn && !view.result && <span class="tag is-allin">Tapis</span>}
-          {p.exchanged && <span class="tag" title="A échangé une carte">⇄</span>}
+          {p.discarded && (
+            <span class="tag is-discard" title={`A échangé et rendu le ${cardName(p.discarded)}`}>
+              ⇄ rend {cardLabel(p.discarded)}
+            </span>
+          )}
           {!p.connected && <span class="tag">absent</span>}
           {handInfo && !p.folded && <span class="tag is-hand">{handInfo.name}</span>}
           {delta !== undefined && delta !== 0 && <span class={`tag mono ${delta > 0 ? "is-gain" : "is-loss"}`}>{delta > 0 ? `+${fmt(delta)}` : `−${fmt(-delta)}`}</span>}
@@ -408,7 +434,7 @@ function MyPanel({
   size: ReturnType<typeof layout>;
   myTurn: boolean;
   actor: TapisPlayer | undefined;
-  wild: number | null;
+  wild: Card | null;
   winUsed: number[];
 }) {
   const cards = me.cards.filter((c): c is Card => !!c);
@@ -423,6 +449,7 @@ function MyPanel({
   const [raiseTo, setRaiseTo] = useState(minTo);
   useEffect(() => setRaiseTo(minTo), [minTo, myTurn, view.street]);
   const bb = view.blinds.bb;
+  const swapCost = bb * RULES.exchangeBB;
   const potAfterCall = view.pot + toCall;
   const presets: [string, number][] = [
     ["Min", minTo],
@@ -432,7 +459,7 @@ function MyPanel({
   ];
   const clamp = (x: number) => Math.max(minTo, Math.min(maxTo, Math.round(x)));
   const canSwap =
-    myTurn && view.config.exchange && view.street !== "preflop" && view.street !== "showdown" && !me.exchanged && me.stack > bb && !me.folded;
+    myTurn && view.config.exchange && view.street === "flop" && !me.exchanged && me.stack > swapCost && !me.folded;
 
   const status = (() => {
     if (view.result) return null;
@@ -450,7 +477,7 @@ function MyPanel({
           <PlayingCard
             card={c}
             w={size.myCard}
-            wild={!!c && c.r === wild}
+            wild={sameCard(c, wild)}
             glow={swapMode ? "pick" : winUsed.includes(i) ? "win" : null}
             dim={me.folded}
             onClick={swapMode ? () => (send({ t: "exchange", index: i }), setSwapMode(false)) : undefined}
@@ -475,7 +502,7 @@ function MyPanel({
           <div class="tactions">
             {swapMode ? (
               <div class="action-row">
-                <span class="swap-hint">Clique la carte à remplacer ({fmt(bb)} au pot).</span>
+                <span class="swap-hint">Clique la carte à remplacer ({fmt(swapCost)} au pot) : elle sera montrée à tous.</span>
                 <button class="btn btn-ghost btn-sm" type="button" onClick={() => setSwapMode(false)}>
                   Annuler
                 </button>
@@ -502,7 +529,7 @@ function MyPanel({
                   )}
                   {canSwap && (
                     <button class="btn btn-ghost" type="button" data-sound="card.hover" onClick={() => setSwapMode(true)} title="Une fois par donne">
-                      ⇄ Échanger · {fmt(bb)}
+                      ⇄ Échanger · {fmt(swapCost)}
                     </button>
                   )}
                 </div>

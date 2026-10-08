@@ -107,7 +107,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     name: "Tapis",
     tagline: "Le hold'em, avec trois entorses",
     pitch:
-      "Un Texas hold'em entre amis, avec des jetons pour rire. À chaque donne, une carte retournée rend folles celles de sa hauteur ; on peut payer pour échanger une carte ; et une prime récompense qui gagne en relevant le défi du moment.",
+      "Un Texas hold'em entre amis, avec des jetons pour rire. À chaque donne, une carte retournée désigne une carte folle ; on peut payer pour échanger une carte au flop ; et une petite prime récompense qui gagne en relevant le défi du moment.",
     players: "2 à 8",
     duration: "30 min",
     tags: ["Cartes", "Bluff", "Tour par tour"],

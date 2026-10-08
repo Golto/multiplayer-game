@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { GameError } from "../../platform.js";
 import { TapisGame } from "./game.js";
-import { CAT, RULES, bestHand, evaluateCards, handName, newDeck, rng, type Card, type TapisConfig } from "../../../shared/games/tapis.js";
+import { CAT, RULES, bestHand, evaluateCards, handName, newDeck, rng, twinOf, type Card, type TapisConfig } from "../../../shared/games/tapis.js";
 
 /** « As », « Th », « 7d », « 2c » → carte. */
 function c(label: string): Card {
@@ -66,7 +66,7 @@ describe("mains", () => {
   });
 
   it("nomme les mains en français", () => {
-    const name = (x: string, wild: number | null = null) => handName(bestHand(cs(x), wild));
+    const name = (x: string, wild: Card | null = null) => handName(bestHand(cs(x), wild));
     expect(name("As Ad 9h 7c 3s")).toBe("Paire d'as");
     expect(name("Qs Qd 9h 7c 3s")).toBe("Paire de dames");
     expect(name("5s 4d 3h 2c As")).toBe("Quinte au 5");
@@ -75,26 +75,32 @@ describe("mains", () => {
     expect(name("As Ks Qs Js Ts")).toBe("Quinte flush royale");
     expect(name("Ks Kd 4h 4c 2s")).toBe("Double paire rois et 4");
     expect(name("Ks Jd 8h 4c 2s")).toBe("Hauteur roi");
-    expect(name("7s 7d 7h 7c 2s", 2)).toBe("Cinq 7");
+    expect(name("7s 7d 7h 7c 2s", c("2s"))).toBe("Cinq 7");
   });
 
-  it("une folle remplace n'importe quelle carte, même une carte déjà là", () => {
-    // Folles : les 2.
-    expect(bestHand(cs("Ks Kd 2h 9c 4s"), 2).cat).toBe(CAT.trips);
-    expect(bestHand(cs("7s 7d 7h 7c 2s"), 2).cat).toBe(CAT.five);
-    expect(bestHand(cs("9s 8s 6s 5s 2d"), 2).cat).toBe(CAT.straightFlush);
-    expect(bestHand(cs("As Ks 9s 4s 2h"), 2).ranks).toEqual([14, 14, 13, 9, 4]);
-    // Cinq d'une sorte bat la quinte flush.
-    expect(bestHand(cs("7s 7d 7h 2c 2s"), 2).value).toBeGreaterThan(evaluateCards(cs("As Ks Qs Js Ts")).value);
-    // Sans folle déclarée, un 2 est un 2.
-    expect(bestHand(cs("Ks Kd 2h 9c 4s")).cat).toBe(CAT.pair);
+  it("la folle remplace n'importe quelle carte, même une carte déjà là", () => {
+    const wild = c("2s");
+    expect(bestHand(cs("Ks Kd 2s 9c 4h"), wild).cat).toBe(CAT.trips);
+    expect(bestHand(cs("7s 7d 7h 7c 2s"), wild).cat).toBe(CAT.five);
+    expect(bestHand(cs("9s 8s 6s 5s 2s"), wild).cat).toBe(CAT.straightFlush);
+    expect(bestHand(cs("As Ks 9s 4s 2s"), wild).ranks).toEqual([14, 14, 13, 9, 4]);
+    // Seule la jumelle désignée est folle : les autres 2 restent des 2.
+    expect(bestHand(cs("Ks Kd 2h 9c 4s"), wild).cat).toBe(CAT.pair);
+    expect(bestHand(cs("Ks Kd 2s 9c 4h")).cat).toBe(CAT.pair);
   });
 
-  it("reste rapide avec trois folles parmi sept cartes", () => {
+  it("la jumelle : même hauteur, même couleur, l'autre enseigne", () => {
+    expect(twinOf(c("7h"))).toEqual(c("7d"));
+    expect(twinOf(c("7d"))).toEqual(c("7h"));
+    expect(twinOf(c("Qs"))).toEqual(c("Qc"));
+    expect(twinOf(c("Qc"))).toEqual(c("Qs"));
+  });
+
+  it("reste rapide avec la folle parmi sept cartes", () => {
     const t = performance.now();
-    const h = bestHand(cs("2s 2d 2h 9c 4s Jd Kh"), 2);
-    expect(h.cat).toBe(CAT.quads);
-    expect(performance.now() - t).toBeLessThan(400);
+    const h = bestHand(cs("2s 2d 2h 9c 4s Jd Kh"), c("2s"));
+    expect(h.cat).toBe(CAT.trips);
+    expect(performance.now() - t).toBeLessThan(200);
   });
 });
 
@@ -231,9 +237,9 @@ describe("pots", () => {
 });
 
 describe("entorses", () => {
-  it("la folle : la carte retournée désigne les folles de la donne", () => {
-    // Première carte : la folle (un 7). B : 7s Kd, A : Qh Qc. Tableau : K K 3 9 4.
-    const { game, act, at } = table(2, { wild: true, exchange: false, bounty: false }, "7h 7s Qh Kd Qc Ks Kh 3c 9d 4s");
+  it("la folle : la jumelle de la carte retournée est la seule folle de la donne", () => {
+    // Carte retournée : 7♥, la folle est le 7♦. B : 7♦ R♦, A : D♥ D♣. Tableau : R R 3 9 4.
+    const { game, act, at } = table(2, { wild: true, exchange: false, bounty: false }, "7h 7d Qh Kd Qc Ks Kh 3c 9d 4s");
     expect(game.wildCard).toEqual(c("7h"));
     act(0, { t: "call" });
     act(1, { t: "check" });
@@ -245,32 +251,40 @@ describe("entorses", () => {
     expect(game.result!.pots[0]!.winners).toEqual([at(1).slot]);
   });
 
-  it("l'échange : une fois par donne, à partir du flop, pour une grosse blinde", () => {
+  it("l'échange : une fois par donne, au flop seulement, deux grosses blindes, carte rendue montrée", () => {
     const { game, act, at } = table(2, { wild: false, exchange: true, bounty: false }, "2c 3d 4c 5d 9h Ts Jd Qc Kh 8s");
     expect(() => act(0, { t: "exchange", index: 0 })).toThrow(GameError);
     act(0, { t: "call" });
     act(1, { t: "check" });
     // Flop distribué (9h Ts Jd) ; la carte suivante du paquet est Qc.
     expect(game.toAct).toBe(at(1).slot);
-    const before = at(1).cards[1]!;
     act(1, { t: "exchange", index: 1 });
     expect(at(1).cards[1]).toEqual(c("Qc"));
-    expect(at(1).cards[1]).not.toEqual(before);
-    expect(at(1).stack).toBe(2000 - 20 - 20);
-    expect(game.view(at(0).id).pot).toBe(60);
+    expect(at(1).stack).toBe(2000 - 20 - 40);
+    expect(game.view(at(0).id).pot).toBe(80);
+    // A voit la carte rendue (le 4♣), pas la nouvelle.
+    const seen = game.view(at(0).id).players.find((p) => p.slot === at(1).slot)!;
+    expect(seen.discarded).toEqual(c("4c"));
+    expect(seen.cards).toEqual([null, null]);
     expect(() => act(1, { t: "exchange", index: 0 })).toThrow(GameError);
     expect(game.toAct).toBe(at(1).slot);
+    act(1, { t: "check" });
+    act(0, { t: "check" });
+    // Au tournant, c'est trop tard.
+    expect(game.street).toBe("turn");
+    act(1, { t: "check" });
+    expect(() => act(0, { t: "exchange", index: 0 })).toThrow(GameError);
   });
 
-  it("la prime : qui la remplit touche une grosse blinde de chacun des autres", () => {
+  it("la prime : qui la relève touche une petite blinde de chacun des autres", () => {
     // Le hasard vaut 0 : la prime tirée est la première, le 7-2. A reçoit 7c 2d.
     const { game, act, at } = table(3, { wild: false, exchange: false, bounty: true }, "Ks Qs 7c Kh Qh 2d");
     expect(game.bounty).toBe("sept-deux");
     act(0, { t: "bet", to: 40 });
     act(1, { t: "fold" });
     act(2, { t: "fold" });
-    expect(game.result!.bounty).toEqual({ id: "sept-deux", winners: [at(0).slot], each: 20 });
-    expect([at(0).stack, at(1).stack, at(2).stack]).toEqual([2070, 1970, 1960]);
+    expect(game.result!.bounty).toEqual({ id: "sept-deux", winners: [at(0).slot], each: 10 });
+    expect([at(0).stack, at(1).stack, at(2).stack]).toEqual([2050, 1980, 1970]);
   });
 });
 
