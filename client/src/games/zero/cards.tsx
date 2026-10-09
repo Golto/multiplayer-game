@@ -146,7 +146,7 @@ export function ZCard({ cell, onClick, hint, fresh, label, small, peek }: CardPr
   const face = cell.up && cell.card;
   const gestures = usePeek(peek && face && !cell.removed ? cell.card : null);
   if (cell.removed) return <div class="zcard is-removed" aria-label="Colonne effacée" />;
-  const content = face ? <CardFace p={cell.card!} small={small} /> : <CardBack small={small} />;
+  const content = face ? <CardFace p={cell.card!} small={small} /> : <CardBack />;
   const cls = `zcard ${face ? `tone-${tone(cell.card!)}` : "is-back"} ${hint ? `is-${hint}` : ""} ${fresh ? "is-fresh" : ""}`;
   const aria = label ?? (face ? format(cell.card!) : "Carte cachée");
   // Avec la loupe, l'infobulle du navigateur ferait doublon.
@@ -214,17 +214,12 @@ function CardFace({ p, small }: { p: Poly; small?: boolean }) {
   );
 }
 
-function CardBack({ small }: { small?: boolean }) {
+function CardBack() {
   const rosette = useMemo(() => hypotrochoid({ R: 50, r: 18, d: 30, cx: 50, cy: 70, scale: 0.62, steps: 700 }), []);
   return (
     <span class="zcard-back">
       <svg viewBox="0 0 100 140" aria-hidden="true">
         <path d={rosette} class="back-rosette" />
-        {!small && (
-          <text x="50" y="80" class="back-zero">
-            0
-          </text>
-        )}
       </svg>
     </span>
   );

@@ -177,11 +177,6 @@ button.zcard {
   stroke-width: 0.6;
   opacity: 0.85;
 }
-.back-zero {
-  font: 700 30px var(--font-sans, sans-serif);
-  fill: hsl(36 30% 94%);
-  text-anchor: middle;
-}
 .zcard.is-removed {
   border: 1.5px dashed var(--border);
   background: transparent;
