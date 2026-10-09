@@ -40,8 +40,20 @@ button.zcard {
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.12));
   overflow: hidden;
 }
+/*
+ * Le fond va de la couleur de la plus grande valeur (en haut à droite) à celle de la plus petite
+ * (en bas à gauche), parmi P(−1), P(0) et P(1). Le bord suit le même dégradé.
+ */
 .zcard-face {
-  background: linear-gradient(160deg, color-mix(in srgb, var(--tint) 34%, var(--background-raised)), color-mix(in srgb, var(--tint) 16%, var(--background-raised)));
+  border-color: transparent;
+  background:
+    linear-gradient(
+        to bottom left,
+        color-mix(in srgb, var(--tint-hi, var(--tint)) 40%, var(--background-raised)),
+        color-mix(in srgb, var(--tint-lo, var(--tint)) 40%, var(--background-raised))
+      )
+      padding-box,
+    linear-gradient(to bottom left, var(--edge-hi, var(--edge)), var(--edge-lo, var(--edge))) border-box;
 }
 .zcard-corner {
   position: absolute;
@@ -112,7 +124,7 @@ button.zcard {
   white-space: nowrap;
 }
 
-/* Couleurs, comme au Skyjo : bleu pour les négatives, puis vert, jaune, rouge. */
+/* Couleur de la valeur en x = 1 (le chiffre en coin), comme au Skyjo : bleu pour les négatives, puis vert, jaune, rouge. */
 .tone-neg {
   --tint: var(--accent-royalblue-light);
   --edge: var(--accent-royalblue);

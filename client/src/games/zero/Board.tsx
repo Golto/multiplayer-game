@@ -283,7 +283,7 @@ export function Board({ view, send, onLeave }: Props) {
           </section>
           <p class="muted side-rule">
             Une colonne s'efface quand ses cartes ont le même <strong>terme dominant</strong>. Le chiffre en coin est la valeur en x = 1 ; en bas,
-            les valeurs pour x = −1, 0 et 1.
+            les valeurs pour x = −1, 0 et 1. La couleur va de la plus grande (en haut à droite) à la plus petite (en bas à gauche).
           </p>
         </aside>
       </main>

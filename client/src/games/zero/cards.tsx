@@ -28,12 +28,43 @@ export function PolyText({ p, class: cls, ref }: { p: Poly; class?: string; ref?
 
 const minus = (n: number) => (n < 0 ? `−${-n}` : String(n));
 
-/** Couleur d'une carte, d'après sa valeur Skyjo (en x = 1). */
-export function tone(p: Poly): string {
-  const v = evaluate(p, 1);
+/** Couleur d'une valeur, comme au Skyjo : bleu pour les négatives, puis turquoise, vert, jaune, rouge. */
+export function toneOf(v: number): Tone {
   if (v < 0) return "neg";
   if (v === 0) return "zero";
   return v <= 4 ? "low" : v <= 8 ? "mid" : "high";
+}
+type Tone = "neg" | "zero" | "low" | "mid" | "high";
+
+/** Couleur d'une carte d'après sa valeur Skyjo (en x = 1) : celle du chiffre en coin. */
+export function tone(p: Poly): Tone {
+  return toneOf(evaluate(p, 1));
+}
+
+/** Teinte de fond et couleur de bord de chaque ton (accents Golpex). */
+const TONES: Record<Tone, [tint: string, edge: string]> = {
+  neg: ["royalblue-light", "royalblue"],
+  zero: ["turquoise-light", "turquoise"],
+  low: ["green-light", "green"],
+  mid: ["yellow-light", "peach"],
+  high: ["strawberry-light", "strawberry"],
+};
+
+/**
+ * Le dégradé d'une carte : de la couleur de sa plus grande valeur (coin haut droit) à celle de sa
+ * plus petite (coin bas gauche), parmi P(−1), P(0) et P(1). Une carte unie vaut la même chose
+ * quel que soit x ; une carte bleue en bas et rouge en haut est un pari sur le tirage.
+ */
+export function toneRange(p: Poly): Record<string, string> {
+  const values = RULES.xValues.map((x) => evaluate(p, x));
+  const [hiTint, hiEdge] = TONES[toneOf(Math.max(...values))];
+  const [loTint, loEdge] = TONES[toneOf(Math.min(...values))];
+  return {
+    "--tint-hi": `var(--accent-${hiTint})`,
+    "--tint-lo": `var(--accent-${loTint})`,
+    "--edge-hi": `var(--accent-${hiEdge})`,
+    "--edge-lo": `var(--accent-${loEdge})`,
+  };
 }
 
 /* ---------------------------------------------------------------- loupe */
@@ -120,14 +151,15 @@ export function ZCard({ cell, onClick, hint, fresh, label, small, peek }: CardPr
   const aria = label ?? (face ? format(cell.card!) : "Carte cachée");
   // Avec la loupe, l'infobulle du navigateur ferait doublon.
   const title = face && !peek ? aria : undefined;
+  const style = face ? toneRange(cell.card!) : undefined;
   if (!onClick)
     return (
-      <div class={cls} aria-label={aria} title={title} {...gestures}>
+      <div class={cls} style={style} aria-label={aria} title={title} {...gestures}>
         {content}
       </div>
     );
   return (
-    <button type="button" class={cls} onClick={onClick} data-sound="none" aria-label={aria} title={title} {...gestures}>
+    <button type="button" class={cls} style={style} onClick={onClick} data-sound="none" aria-label={aria} title={title} {...gestures}>
       {content}
     </button>
   );
