@@ -55,6 +55,19 @@ button.zcard {
       padding-box,
     linear-gradient(to bottom left, var(--edge-hi, var(--edge)), var(--edge-lo, var(--edge))) border-box;
 }
+/* En sombre, les teintes sont des pastels vifs : on les dose bien moins pour garder un fond sombre
+   et un texte clair bien contrasté ; le bord en dégradé porte la couleur. */
+.dark .zcard-face {
+  border-width: 2px;
+  background:
+    linear-gradient(
+        to bottom left,
+        color-mix(in srgb, var(--tint-hi, var(--tint)) 20%, var(--background-raised)),
+        color-mix(in srgb, var(--tint-lo, var(--tint)) 20%, var(--background-raised))
+      )
+      padding-box,
+    linear-gradient(to bottom left, var(--edge-hi, var(--edge)), var(--edge-lo, var(--edge))) border-box;
+}
 .zcard-corner {
   position: absolute;
   top: 5%;
